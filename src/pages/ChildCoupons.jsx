@@ -10,7 +10,7 @@ export const ChildCoupons = ({ userCoupons }) => {
   const filteredCoupons = userCoupons.filter((c) => c.status === filter);
 
   return (
-    <div className="space-y-5 pb-20 max-w-2xl mx-auto">
+    <div className="space-y-5 pb-6 max-w-2xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between gap-3 bg-white p-5 rounded-3xl border border-amber-200/80 shadow-sm">
         <div className="flex items-center gap-2">

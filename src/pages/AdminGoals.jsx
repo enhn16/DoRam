@@ -71,7 +71,7 @@ export const AdminGoals = ({
   };
 
   return (
-    <div className="space-y-6 pb-20 max-w-2xl mx-auto">
+    <div className="space-y-6 pb-6 max-w-2xl mx-auto">
       {/* Goals Management Section */}
       <div>
         <div className="flex items-center justify-between gap-3 mb-4 px-1">

@@ -218,7 +218,7 @@ export default function App() {
         pendingCount={pendingCount}
       />
 
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-5">
+      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 pt-5 pb-28">
         {/* User (Child) Views */}
         {role === 'child' && activeTab === 'child-home' && (
           <ChildHome

@@ -30,22 +30,22 @@ export const ChildShop = ({
   };
 
   return (
-    <div className="space-y-5 pb-20 max-w-2xl mx-auto">
+    <div className="space-y-5 pb-6 max-w-2xl mx-auto">
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 rounded-3xl p-5 shadow-sm border border-amber-300 text-amber-950 flex items-center justify-between gap-3">
-        <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-amber-100/90 text-amber-900 rounded-full text-xs font-bold mb-1 whitespace-nowrap">
+            <div className="bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 rounded-3xl p-4 sm:p-5 shadow-sm border border-amber-300 text-amber-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="min-w-0">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-amber-100/90 text-amber-900 rounded-full text-xs font-bold mb-1">
             <Gift className="w-3.5 h-3.5 text-amber-700 shrink-0" />
             <span>선물 교환소</span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-black tracking-tight whitespace-nowrap">
+          <h2 className="text-lg sm:text-xl font-black tracking-tight leading-snug">
             원하는 보상 쿠폰으로 교환해요! 🎁
           </h2>
         </div>
 
-        <div className="bg-white/90 backdrop-blur-sm px-3.5 py-2 rounded-2xl shadow-inner border border-amber-200 text-right shrink-0">
-          <span className="text-[10px] font-bold text-slate-500 block whitespace-nowrap">내 보유 포인트</span>
-          <span className="text-lg font-black text-amber-600 flex items-center justify-end gap-1 whitespace-nowrap">
+        <div className="bg-white/90 backdrop-blur-sm px-3.5 py-2 rounded-2xl shadow-inner border border-amber-200 flex items-center justify-between sm:flex-col sm:items-end shrink-0">
+          <span className="text-[11px] sm:text-[10px] font-bold text-slate-500 whitespace-nowrap">내 보유 포인트</span>
+          <span className="text-base sm:text-lg font-black text-amber-600 flex items-center gap-1 whitespace-nowrap">
             <Coins className="w-4 h-4 fill-amber-400 text-amber-500 shrink-0" />
             {profile.points} P
           </span>

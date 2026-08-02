@@ -55,7 +55,7 @@ export const ChildHome = ({
   };
 
   return (
-    <div className="space-y-6 pb-20 max-w-2xl mx-auto">
+    <div className="space-y-6 pb-6 max-w-2xl mx-auto">
       {/* Child Profile Welcome Header Card */}
       <div className="bg-gradient-to-r from-amber-400 via-amber-300 to-amber-200 rounded-3xl p-5 shadow-sm border border-amber-300 text-amber-950">
         <div className="flex items-center justify-between gap-3">

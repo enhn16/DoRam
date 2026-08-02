@@ -28,7 +28,7 @@ export const AdminHome = ({
   };
 
   return (
-    <div className="space-y-5 pb-20 max-w-2xl mx-auto">
+    <div className="space-y-5 pb-6 max-w-2xl mx-auto">
       {/* 1. 현재 포인트 & 자녀 요약 Card */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}

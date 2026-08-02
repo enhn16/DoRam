@@ -66,7 +66,7 @@ export const AdminCoupons = ({
   };
 
   return (
-    <div className="space-y-6 pb-20 max-w-2xl mx-auto">
+    <div className="space-y-6 pb-6 max-w-2xl mx-auto">
       {/* Active User Passes Section */}
       <div className="bg-amber-50/80 rounded-3xl p-5 border border-amber-200 shadow-sm">
         <div className="flex items-center gap-2 mb-3">
