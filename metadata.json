@@ -1,0 +1,8 @@
+{
+  "name": "두람 (Duram)",
+  "description": "부모에게는 아이의 자람을, 아이에게는 성장의 보람을 - 가족 맞춤형 습관 및 보상 관리 플랫폼",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
