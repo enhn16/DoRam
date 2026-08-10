@@ -20,21 +20,39 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #fef3c7;
+  background: #f1f5f9;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #fcd34d;
+  background: #cbd5e1;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #fbbf24;
+  background: #94a3b8;
 }
 
-.bg-pattern {
-  background-color: #fefce8;
-  background-image: radial-gradient(#fde68a 1px, transparent 1px);
+.bg-check-sky {
+  background-color: #f7faff;
+  background-image: 
+    linear-gradient(to right, rgba(186, 214, 245, 0.45) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(186, 214, 245, 0.45) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.bg-check-purple {
+  background-color: #fdfaff;
+  background-image: 
+    linear-gradient(to right, rgba(226, 208, 246, 0.45) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(226, 208, 246, 0.45) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.bg-check-login {
+  background-color: #fcfcfd;
+  background-image: 
+    linear-gradient(to right, rgba(226, 232, 240, 0.5) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(226, 232, 240, 0.5) 1px, transparent 1px);
   background-size: 20px 20px;
 }

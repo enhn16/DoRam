@@ -31,22 +31,22 @@ export const ChildShop = ({
 
   return (
     <div className="space-y-5 pb-6 max-w-2xl mx-auto">
-      {/* Header Banner */}
-            <div className="bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 rounded-3xl p-4 sm:p-5 shadow-sm border border-amber-300 text-amber-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      {/* Header Banner - Solid Sky Theme */}
+      <div className="bg-white rounded-3xl p-4 sm:p-5 shadow-xs border border-sky-200 text-slate-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="min-w-0">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-amber-100/90 text-amber-900 rounded-full text-xs font-bold mb-1">
-            <Gift className="w-3.5 h-3.5 text-amber-700 shrink-0" />
-            <span>선물 교환소</span>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-sky-100 text-sky-900 rounded-full text-xs font-bold mb-1 shadow-xs border border-sky-200">
+            <Gift className="w-3.5 h-3.5 text-sky-600 shrink-0" />
+            <span>쿠폰 교환소</span>
           </div>
-          <h2 className="text-lg sm:text-xl font-black tracking-tight leading-snug">
-            원하는 보상 쿠폰으로 교환해요! 🎁
+          <h2 className="text-lg sm:text-xl font-black tracking-tight leading-snug text-slate-900">
+            모은 포인트로 선물을 교환해요! 🎁
           </h2>
         </div>
 
-        <div className="bg-white/90 backdrop-blur-sm px-3.5 py-2 rounded-2xl shadow-inner border border-amber-200 flex items-center justify-between sm:flex-col sm:items-end shrink-0">
-          <span className="text-[11px] sm:text-[10px] font-bold text-slate-500 whitespace-nowrap">내 보유 포인트</span>
-          <span className="text-base sm:text-lg font-black text-amber-600 flex items-center gap-1 whitespace-nowrap">
-            <Coins className="w-4 h-4 fill-amber-400 text-amber-500 shrink-0" />
+        <div className="bg-sky-50 px-3.5 py-2 rounded-2xl shadow-xs border border-sky-200 flex items-center justify-between sm:flex-col sm:items-end shrink-0">
+          <span className="text-[11px] sm:text-[10px] font-bold text-sky-700 whitespace-nowrap">보유 포인트</span>
+          <span className="text-base sm:text-lg font-black text-sky-950 flex items-center gap-1 whitespace-nowrap">
+            <Coins className="w-4 h-4 fill-sky-500 text-sky-600 shrink-0" />
             {profile.points} P
           </span>
         </div>
@@ -64,26 +64,26 @@ export const ChildShop = ({
           return (
             <motion.div
               key={reward.id}
-              className={`p-4 rounded-2xl border transition-all shadow-sm flex flex-col justify-between gap-3 ${
+              className={`p-4 rounded-3xl border transition-all shadow-xs flex flex-col justify-between gap-3 ${
                 canAfford
-                  ? 'bg-white border-amber-300 hover:border-amber-400'
+                  ? 'bg-white border-[#d0e8ff] hover:border-sky-300'
                   : 'bg-slate-50 border-slate-200 opacity-90'
               }`}
             >
               <div>
                 <div className="flex items-start justify-between gap-2 mb-2">
-                  <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold shrink-0">
-                    <IconRenderer name={reward.icon} className="w-5 h-5 text-amber-700" />
+                  <div className="w-10 h-10 rounded-2xl bg-[#d0e8ff]/60 text-sky-900 flex items-center justify-center font-bold shrink-0">
+                    <IconRenderer name={reward.icon} className="w-5 h-5 text-sky-700" />
                   </div>
 
                   <div
-                    className={`px-2.5 py-1 rounded-full text-xs font-extrabold flex items-center gap-1 shrink-0 whitespace-nowrap ${
+                    className={`px-2.5 py-1 rounded-full text-xs font-black flex items-center gap-1 shrink-0 whitespace-nowrap ${
                       canAfford
-                        ? 'bg-amber-500 text-white'
+                        ? 'bg-[#fffbd1] border border-[#f1e899] text-amber-900'
                         : 'bg-slate-200 text-slate-700'
                     }`}
                   >
-                    <Coins className="w-3.5 h-3.5" />
+                    <Coins className="w-3.5 h-3.5 text-amber-500 fill-amber-400" />
                     <span>{reward.requiredPoints} P</span>
                   </div>
                 </div>
@@ -93,7 +93,7 @@ export const ChildShop = ({
                 </h4>
 
                 {reward.description && (
-                  <p className="text-xs text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-100">
+                  <p className="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
                     {reward.description}
                   </p>
                 )}
@@ -104,9 +104,9 @@ export const ChildShop = ({
                 {canAfford ? (
                   <button
                     onClick={() => setSelectedReward(reward)}
-                    className="w-full py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition whitespace-nowrap"
+                    className="w-full py-2.5 rounded-2xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition whitespace-nowrap"
                   >
-                    <Sparkles className="w-3.5 h-3.5 fill-amber-200 text-amber-100" />
+                    <Sparkles className="w-3.5 h-3.5 fill-sky-200 text-sky-100" />
                     <span>쿠폰 교환하기 ({reward.requiredPoints}P)</span>
                   </button>
                 ) : (
@@ -119,7 +119,7 @@ export const ChildShop = ({
                     </div>
                     <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
                       <div
-                        className="bg-amber-400 h-full rounded-full transition-all duration-300"
+                        className="bg-sky-500 h-full rounded-full transition-all duration-300"
                         style={{ width: `${progressPercent}%` }}
                       />
                     </div>
@@ -139,7 +139,7 @@ export const ChildShop = ({
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-amber-200 relative text-center"
+              className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-sky-200 relative text-center"
             >
               <button
                 onClick={() => setSelectedReward(null)}
@@ -148,19 +148,19 @@ export const ChildShop = ({
                 <X className="w-5 h-5" />
               </button>
 
-              <div className="w-14 h-14 bg-amber-100 text-amber-700 rounded-2xl flex items-center justify-center mx-auto mb-3 text-2xl">
+              <div className="w-14 h-14 bg-[#d0e8ff] text-sky-900 rounded-2xl flex items-center justify-center mx-auto mb-3 text-2xl shadow-xs">
                 🎁
               </div>
 
-              <h3 className="text-lg font-bold text-slate-900 mb-1 whitespace-nowrap">
+              <h3 className="text-lg font-black text-slate-900 mb-1 whitespace-nowrap">
                 쿠폰을 교환하시겠습니까?
               </h3>
 
-              <p className="text-sm font-bold text-amber-700 mb-4 truncate">
+              <p className="text-sm font-bold text-sky-800 mb-4 truncate">
                 [{selectedReward.title}]
               </p>
 
-              <div className="bg-amber-50 p-3.5 rounded-2xl border border-amber-200 mb-4 text-xs text-amber-900 space-y-1.5 text-left">
+              <div className="bg-sky-50/60 p-3.5 rounded-2xl border border-sky-200 mb-4 text-xs text-sky-950 space-y-1.5 text-left">
                 <div className="flex justify-between font-medium whitespace-nowrap">
                   <span>현재 보유 포인트:</span>
                   <span className="font-bold">{profile.points} P</span>
@@ -169,7 +169,7 @@ export const ChildShop = ({
                   <span>차감 포인트:</span>
                   <span className="font-bold">-{selectedReward.requiredPoints} P</span>
                 </div>
-                <div className="flex justify-between font-bold text-emerald-700 pt-1.5 border-t border-amber-200/80 whitespace-nowrap">
+                <div className="flex justify-between font-bold text-emerald-700 pt-1.5 border-t border-sky-200/80 whitespace-nowrap">
                   <span>교환 후 잔여 포인트:</span>
                   <span>{profile.points - selectedReward.requiredPoints} P</span>
                 </div>
@@ -185,7 +185,7 @@ export const ChildShop = ({
                 </button>
                 <button
                   onClick={handleConfirmRedeem}
-                  className="flex-1 py-2.5 text-xs font-bold text-white bg-amber-500 hover:bg-amber-600 rounded-2xl shadow-md transition whitespace-nowrap"
+                  className="flex-1 py-2.5 text-xs font-bold text-white bg-sky-600 hover:bg-sky-700 rounded-2xl shadow-md transition whitespace-nowrap"
                 >
                   교환하기 🎉
                 </button>

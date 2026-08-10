@@ -13,7 +13,7 @@ import { ko } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-export const CalendarView = ({ submissions }) => {
+export const CalendarView = ({ submissions, role = 'child' }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDaySubmissions, setSelectedDaySubmissions] = useState(null);
 
@@ -36,12 +36,33 @@ export const CalendarView = ({ submissions }) => {
     return approvedSubmissions.filter((s) => s.date === dateStr);
   };
 
+  const isAdmin = role === 'admin';
+
+  const themeClasses = {
+    cardBorder: isAdmin ? 'border-purple-200' : 'border-sky-200',
+    iconColor: isAdmin ? 'text-purple-600' : 'text-sky-600',
+    todayBtn: isAdmin
+      ? 'bg-purple-100 text-purple-900 hover:bg-purple-200'
+      : 'bg-sky-100 text-sky-900 hover:bg-sky-200',
+    todayCell: isAdmin
+      ? 'border-purple-400 bg-purple-50/90 ring-1 ring-purple-300'
+      : 'border-sky-400 bg-sky-50/90 ring-1 ring-sky-300',
+    todayText: isAdmin ? 'text-purple-900 font-black' : 'text-sky-900 font-black',
+    modalBorder: isAdmin ? 'border-purple-200' : 'border-sky-200',
+    modalBtn: isAdmin
+      ? 'bg-purple-600 hover:bg-purple-700 text-white'
+      : 'bg-sky-600 hover:bg-sky-700 text-white',
+    pointBadge: isAdmin
+      ? 'bg-purple-100 text-purple-900 border border-purple-200'
+      : 'bg-sky-100 text-sky-900 border border-sky-200',
+  };
+
   return (
-    <div className="bg-white rounded-3xl p-4 sm:p-5 shadow-sm border border-amber-200/60">
+    <div className={`bg-white rounded-3xl p-4 sm:p-5 shadow-xs border ${themeClasses.cardBorder}`}>
       {/* Calendar Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <CalendarIcon className="w-4 h-4 text-amber-500 shrink-0" />
+          <CalendarIcon className={`w-4 h-4 ${themeClasses.iconColor} shrink-0`} />
           <h2 className="text-base font-black text-slate-900 whitespace-nowrap">
             {format(currentMonth, 'yyyy년 M월', { locale: ko })} 달성 현황
           </h2>
@@ -56,7 +77,7 @@ export const CalendarView = ({ submissions }) => {
           </button>
           <button
             onClick={() => setCurrentMonth(new Date())}
-            className="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-900 text-xs font-bold hover:bg-amber-200 transition whitespace-nowrap"
+            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition whitespace-nowrap ${themeClasses.todayBtn}`}
           >
             오늘
           </button>
@@ -99,26 +120,26 @@ export const CalendarView = ({ submissions }) => {
                 hasAchieved ? 'cursor-pointer' : 'cursor-default'
               } ${
                 isCurrentDay
-                  ? 'border-amber-400 bg-amber-50/80 ring-1 ring-amber-300'
+                  ? themeClasses.todayCell
                   : hasAchieved
-                  ? 'border-emerald-200 bg-emerald-50/50 hover:bg-emerald-100/50'
+                  ? 'border-emerald-300 bg-emerald-50/80 hover:bg-emerald-100/80'
                   : 'border-slate-100 bg-slate-50/40'
               }`}
             >
               <span
                 className={`text-[11px] font-bold leading-none mt-0.5 ${
                   isCurrentDay
-                    ? 'text-amber-800 font-black'
+                    ? themeClasses.todayText
                     : 'text-slate-600'
                 }`}
               >
                 {format(day, 'd')}
               </span>
 
-              {/* Minimal Achievement Indicator (Dot / Badge) */}
+              {/* Minimal Achievement Indicator (Green Dot) */}
               <div className="mb-0.5 flex items-center justify-center">
                 {hasAchieved ? (
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm" title={`${daySubs.length}개 달성`} />
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-xs" title={`${daySubs.length}개 달성`} />
                 ) : (
                   <span className="w-1 h-1 rounded-full bg-transparent" />
                 )}
@@ -136,7 +157,7 @@ export const CalendarView = ({ submissions }) => {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl border border-amber-200 relative"
+              className={`bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl border ${themeClasses.modalBorder} relative`}
             >
               <button
                 onClick={() => setSelectedDaySubmissions(null)}
@@ -162,13 +183,13 @@ export const CalendarView = ({ submissions }) => {
                         {sub.goalTitle}
                       </div>
                       {sub.parentFeedback && (
-                        <div className="text-[11px] text-indigo-600 font-medium truncate mt-0.5">
+                        <div className="text-[11px] text-purple-700 font-medium truncate mt-0.5">
                           💬 {sub.parentFeedback}
                         </div>
                       )}
                     </div>
 
-                    <span className="text-xs font-black px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 shrink-0 whitespace-nowrap">
+                    <span className={`text-xs font-black px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap ${themeClasses.pointBadge}`}>
                       +{sub.points} P
                     </span>
                   </div>
@@ -177,7 +198,7 @@ export const CalendarView = ({ submissions }) => {
 
               <button
                 onClick={() => setSelectedDaySubmissions(null)}
-                className="w-full mt-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs transition whitespace-nowrap"
+                className={`w-full mt-4 py-2.5 rounded-2xl font-bold text-xs transition whitespace-nowrap ${themeClasses.modalBtn}`}
               >
                 확인
               </button>

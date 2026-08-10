@@ -49,11 +49,12 @@ export default function App() {
     setIsLoggedIn(false);
   };
 
-  // Update Child Profile Name
-  const handleUpdateChildName = (newName) => {
+  // Update Child Profile Name & Avatar
+  const handleUpdateProfile = ({ name, avatar }) => {
     setProfile((prev) => ({
       ...prev,
-      name: newName,
+      ...(name ? { name } : {}),
+      ...(avatar ? { avatar } : {}),
     }));
   };
 
@@ -127,7 +128,7 @@ export default function App() {
       points: prev.points - coupon.requiredPoints,
     }));
 
-    const randomCode = `DURAM-${Math.floor(1000 + Math.random() * 9000)}`;
+    const randomCode = `DORAM-${Math.floor(1000 + Math.random() * 9000)}`;
 
     const newPass = {
       id: `pass-${Date.now()}`,
@@ -209,8 +210,10 @@ export default function App() {
     return <LoginScreen profile={profile} onLogin={handleLogin} />;
   }
 
+  const bgStyle = role === 'child' ? 'bg-check-sky text-slate-900' : 'bg-check-purple text-slate-900';
+
   return (
-    <div className="min-h-screen bg-pattern flex flex-col font-sans">
+    <div className={`min-h-screen ${bgStyle} flex flex-col font-sans transition-colors duration-200`}>
       <Header
         role={role}
         profile={profile}
@@ -227,7 +230,7 @@ export default function App() {
             profile={profile}
             onSubmitTask={handleTaskSubmit}
             onNavigateToShop={() => setActiveTab('child-shop')}
-            onUpdateName={handleUpdateChildName}
+            onUpdateProfile={handleUpdateProfile}
           />
         )}
 

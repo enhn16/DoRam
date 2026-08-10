@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Gift, Ticket, CheckSquare } from 'lucide-react';
+import { Home, CheckSquare, Gift, Ticket } from 'lucide-react';
 
 export const BottomNav = ({
   role,
@@ -8,7 +8,7 @@ export const BottomNav = ({
   pendingCount,
 }) => {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-amber-200/80 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] h-16 px-2 flex items-center justify-center">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-slate-200/80 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] h-16 px-2 flex items-center justify-center">
       <div className="max-w-md w-full mx-auto px-2 flex items-center justify-around h-full">
         {role === 'child' ? (
           /* Child User Bottom Navigation (3 menus: 홈 | 쿠폰 교환 | 쿠폰함) */
@@ -17,7 +17,7 @@ export const BottomNav = ({
               onClick={() => setActiveTab('child-home')}
               className={`flex-1 h-full flex flex-col items-center justify-center gap-0.5 transition-all rounded-xl ${
                 activeTab === 'child-home'
-                  ? 'text-amber-600 font-bold scale-105'
+                  ? 'text-sky-700 font-bold bg-sky-100 scale-105'
                   : 'text-slate-400 hover:text-slate-600'
               }`}
             >
@@ -29,7 +29,7 @@ export const BottomNav = ({
               onClick={() => setActiveTab('child-shop')}
               className={`flex-1 h-full flex flex-col items-center justify-center gap-0.5 transition-all rounded-xl ${
                 activeTab === 'child-shop'
-                  ? 'text-amber-600 font-bold scale-105'
+                  ? 'text-sky-700 font-bold bg-sky-100 scale-105'
                   : 'text-slate-400 hover:text-slate-600'
               }`}
             >
@@ -41,7 +41,7 @@ export const BottomNav = ({
               onClick={() => setActiveTab('child-coupons')}
               className={`flex-1 h-full flex flex-col items-center justify-center gap-0.5 transition-all rounded-xl ${
                 activeTab === 'child-coupons'
-                  ? 'text-amber-600 font-bold scale-105'
+                  ? 'text-sky-700 font-bold bg-sky-100 scale-105'
                   : 'text-slate-400 hover:text-slate-600'
               }`}
             >
@@ -50,20 +50,20 @@ export const BottomNav = ({
             </button>
           </>
         ) : (
-          /* Parent Admin Bottom Navigation (3 menus: 홈 | 목표 관리 | 쿠폰 관리) */
+          /* Parent/Admin Bottom Navigation (3 menus: 홈 | 목표 관리 | 쿠폰 관리) */
           <>
             <button
               onClick={() => setActiveTab('admin-home')}
               className={`flex-1 h-full flex flex-col items-center justify-center gap-0.5 transition-all relative rounded-xl ${
                 activeTab === 'admin-home'
-                  ? 'text-indigo-600 font-bold scale-105'
+                  ? 'text-purple-700 font-bold bg-purple-100 scale-105'
                   : 'text-slate-400 hover:text-slate-600'
               }`}
             >
               <div className="relative shrink-0">
                 <Home className={`w-5 h-5 ${activeTab === 'admin-home' ? 'stroke-[2.5px]' : ''}`} />
                 {pendingCount > 0 && (
-                  <span className="absolute -top-1 -right-2.5 w-4 h-4 bg-red-500 text-white text-[10px] font-extrabold rounded-full flex items-center justify-center animate-bounce">
+                  <span className="absolute -top-1 -right-2.5 w-4 h-4 bg-purple-600 text-white text-[10px] font-extrabold rounded-full flex items-center justify-center animate-bounce">
                     {pendingCount}
                   </span>
                 )}
@@ -75,7 +75,7 @@ export const BottomNav = ({
               onClick={() => setActiveTab('admin-goals')}
               className={`flex-1 h-full flex flex-col items-center justify-center gap-0.5 transition-all rounded-xl ${
                 activeTab === 'admin-goals'
-                  ? 'text-indigo-600 font-bold scale-105'
+                  ? 'text-purple-700 font-bold bg-purple-100 scale-105'
                   : 'text-slate-400 hover:text-slate-600'
               }`}
             >
@@ -87,7 +87,7 @@ export const BottomNav = ({
               onClick={() => setActiveTab('admin-coupons')}
               className={`flex-1 h-full flex flex-col items-center justify-center gap-0.5 transition-all rounded-xl ${
                 activeTab === 'admin-coupons'
-                  ? 'text-indigo-600 font-bold scale-105'
+                  ? 'text-purple-700 font-bold bg-purple-100 scale-105'
                   : 'text-slate-400 hover:text-slate-600'
               }`}
             >
