@@ -55,7 +55,7 @@ export const LoginScreen = ({ profile, onLogin }) => {
                 </div>
                 <div className="text-left">
                   <div className="text-base font-black text-sky-950 whitespace-nowrap">사용자 (아이)</div>
-                  <div className="text-[11px] text-sky-700 font-medium">칭찬 도장 찍고 보상 받기</div>
+                  <div className="text-[11px] text-sky-700 font-medium">목표 달성 하고 보상 받기</div>
                 </div>
               </div>
               <ArrowRight className="w-5 h-5 text-sky-700 group-hover:translate-x-1 transition-transform shrink-0" />
@@ -77,7 +77,7 @@ export const LoginScreen = ({ profile, onLogin }) => {
                 </div>
                 <div className="text-left">
                   <div className="text-base font-black text-purple-950 whitespace-nowrap">관리자 (보호자)</div>
-                  <div className="text-[11px] text-purple-700 font-medium">목표 및 쿠폰 관리하기</div>
+                  <div className="text-[11px] text-purple-700 font-medium">목표 및 보상 관리하기</div>
                 </div>
               </div>
               <ArrowRight className="w-5 h-5 text-purple-700 group-hover:translate-x-1 transition-transform shrink-0" />

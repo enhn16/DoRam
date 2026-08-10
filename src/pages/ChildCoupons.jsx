@@ -88,7 +88,7 @@ export const ChildCoupons = ({ userCoupons }) => {
               <div className="p-3 bg-slate-50 rounded-b-3xl border-t border-sky-100">
                 {coupon.status === 'active' ? (
                   <div className="flex items-center justify-center gap-1 text-xs font-bold text-sky-950 bg-sky-100 p-2 rounded-xl whitespace-nowrap border border-sky-200">
-                    <span>🎟️ 사용 가능 (보호자에게 보여주세요)</span>
+                    <span>🎟️ 사용 가능</span>
                   </div>
                 ) : (
                   <div className="flex items-center justify-center gap-1 text-xs font-bold text-slate-500 bg-slate-200/80 p-2 rounded-xl whitespace-nowrap">
