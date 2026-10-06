@@ -15,7 +15,8 @@ import {
   Star,
   Award,
   Zap,
-  Coins
+  Coins,
+  Ticket
 } from 'lucide-react';
 
 export const IconRenderer = ({ name, className = "w-5 h-5" }) => {
@@ -52,6 +53,8 @@ export const IconRenderer = ({ name, className = "w-5 h-5" }) => {
       return <Zap className={className} />;
     case 'Coins':
       return <Coins className={className} />;
+    case 'Ticket':
+      return <Ticket className={className} />;
     default:
       return <Sparkles className={className} />;
   }

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { IconRenderer } from '../components/IconRenderer';
 import { playCouponFanfare } from '../utils/audio';
-import { Coins, Gift, Sparkles, X } from 'lucide-react';
+import { Coins, Gift, Sparkles, X, Ticket } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import confetti from 'canvas-confetti';
 
@@ -35,11 +35,11 @@ export const ChildShop = ({
       <div className="bg-white rounded-3xl p-4 sm:p-5 shadow-xs border border-sky-200 text-slate-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="min-w-0">
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-sky-100 text-sky-900 rounded-full text-xs font-bold mb-1 shadow-xs border border-sky-200">
-            <Gift className="w-3.5 h-3.5 text-sky-600 shrink-0" />
+            <Ticket className="w-3.5 h-3.5 text-sky-600 shrink-0" />
             <span>쿠폰 교환소</span>
           </div>
           <h2 className="text-lg sm:text-xl font-black tracking-tight leading-snug text-slate-900">
-            모은 포인트로 선물을 교환해요! 🎁
+            모은 포인트로 원하는 쿠폰을 교환해요!
           </h2>
         </div>
 
@@ -93,7 +93,7 @@ export const ChildShop = ({
                 </h4>
 
                 {reward.description && (
-                  <p className="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                  <p className="text-xs text-slate-500 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
                     {reward.description}
                   </p>
                 )}
@@ -149,7 +149,7 @@ export const ChildShop = ({
               </button>
 
               <div className="w-14 h-14 bg-[#d0e8ff] text-sky-900 rounded-2xl flex items-center justify-center mx-auto mb-3 text-2xl shadow-xs">
-                🎁
+                <Ticket className="w-7 h-7 text-sky-700" />
               </div>
 
               <h3 className="text-lg font-black text-slate-900 mb-1 whitespace-nowrap">

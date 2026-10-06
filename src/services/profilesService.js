@@ -1,10 +1,14 @@
 import { supabase } from './supabase';
 
-// 프로필 데이터 조회 (단일 자녀 데이터 가져오기)
-export async function fetchProfile() {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
+// 프로필 데이터 조회 (특정 가족의 자녀 데이터 가져오기)
+export async function fetchProfile(familyId = null) {
+  let query = supabase.from('profiles').select('*');
+
+  if (familyId) {
+    query = query.eq('family_id', familyId);
+  }
+
+  const { data, error } = await query
     .order('id', { ascending: true })
     .limit(1)
     .maybeSingle();

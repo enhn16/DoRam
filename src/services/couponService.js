@@ -1,11 +1,13 @@
 import { supabase } from './supabase';
 
-export async function fetchCoupons() {
-  const { data, error } = await supabase
-    .from('coupons')
-    .select('*')
-    .eq('active', true)
-    .order('created_at', { ascending: false });
+export async function fetchCoupons(familyId = null) {
+  let query = supabase.from('coupons').select('*').eq('active', true);
+
+  if (familyId) {
+    query = query.eq('family_id', familyId);
+  }
+
+  const { data, error } = await query.order('created_at', { ascending: false });
 
   if (error) {
     console.error('쿠폰 불러오기 실패:', error);
@@ -15,17 +17,24 @@ export async function fetchCoupons() {
   return data;
 }
 
-export async function createCoupon(coupon) {
+export async function createCoupon(coupon, familyId = null) {
+  const insertPayload = {
+    title: coupon.title,
+    required_points: coupon.requiredPoints,
+    description: coupon.description || '',
+    category: coupon.category,
+    icon: coupon.icon,
+    active: coupon.active ?? true,
+  };
+
+  const targetFamilyId = familyId || coupon.family_id || coupon.familyId;
+  if (targetFamilyId) {
+    insertPayload.family_id = targetFamilyId;
+  }
+
   const { data, error } = await supabase
     .from('coupons')
-    .insert({
-      title: coupon.title,
-      required_points: coupon.requiredPoints,
-      description: coupon.description || '',
-      category: coupon.category,
-      icon: coupon.icon,
-      active: coupon.active ?? true,
-    })
+    .insert(insertPayload)
     .select()
     .single();
 

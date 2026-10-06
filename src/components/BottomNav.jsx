@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, CheckSquare, Gift, Ticket } from 'lucide-react';
+import { Home, CheckSquare, Gift, Ticket, Settings } from 'lucide-react';
 
 export const BottomNav = ({
   role,
@@ -91,8 +91,20 @@ export const BottomNav = ({
                   : 'text-slate-400 hover:text-slate-600'
               }`}
             >
-              <Gift className={`w-5 h-5 shrink-0 ${activeTab === 'admin-coupons' ? 'stroke-[2.5px]' : ''}`} />
+              <Ticket className={`w-5 h-5 shrink-0 ${activeTab === 'admin-coupons' ? 'stroke-[2.5px]' : ''}`} />
               <span className="text-[11px] leading-none font-semibold whitespace-nowrap">쿠폰 관리</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('admin-settings')}
+              className={`flex-1 h-full flex flex-col items-center justify-center gap-0.5 transition-all rounded-xl ${
+                activeTab === 'admin-settings'
+                  ? 'text-purple-700 font-bold bg-purple-100 scale-105'
+                  : 'text-slate-400 hover:text-slate-600'
+              }`}
+            >
+              <Settings className={`w-5 h-5 shrink-0 ${activeTab === 'admin-settings' ? 'stroke-[2.5px]' : ''}`} />
+              <span className="text-[11px] leading-none font-semibold whitespace-nowrap">설정</span>
             </button>
           </>
         )}

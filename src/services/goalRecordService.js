@@ -1,15 +1,20 @@
 import { supabase } from './supabase';
 
-export async function fetchGoalRecords() {
-  const { data, error } = await supabase
+export async function fetchGoalRecords(familyId = null) {
+  let query = supabase
     .from('goal_records')
     .select(`
       *,
       goals (
         title
       )
-    `)
-    .order('created_at', { ascending: false });
+    `);
+
+  if (familyId) {
+    query = query.eq('family_id', familyId);
+  }
+
+  const { data, error } = await query.order('created_at', { ascending: false });
 
   if (error) {
     console.error('목표 기록 불러오기 실패:', error);
@@ -19,16 +24,23 @@ export async function fetchGoalRecords() {
   return data;
 }
 
-export async function createGoalRecord(record) {
+export async function createGoalRecord(record, familyId = null) {
+  const insertPayload = {
+    goal_id: record.goalId,
+    date: record.date,
+    status: record.status || 'pending',
+    points: record.points,
+    child_note: record.childNote || '',
+  };
+
+  const targetFamilyId = familyId || record.family_id || record.familyId;
+  if (targetFamilyId) {
+    insertPayload.family_id = targetFamilyId;
+  }
+
   const { data, error } = await supabase
     .from('goal_records')
-    .insert({
-      goal_id: record.goalId,
-      date: record.date,
-      status: record.status || 'pending',
-      points: record.points,
-      child_note: record.childNote || '',
-    })
+    .insert(insertPayload)
     .select()
     .single();
 
