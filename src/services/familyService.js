@@ -25,11 +25,50 @@ export function saveFamilyCode(code) {
 }
 
 // 로컬 스토리지 가족 코드 삭제 (가족 변경/로그아웃 시)
-export function clearSavedFamilyCode() {
+export async function clearSavedFamilyCode() {
   try {
     localStorage.removeItem(STORAGE_FAMILY_KEY);
+    await supabase.auth.signOut().catch(() => {});
   } catch (e) {
     console.error('가족 코드 삭제 실패:', e);
+  }
+}
+
+// 익명 인증 세션에 가족 ID 바인딩 및 동기화 (RLS 보안 통과용)
+export async function ensureFamilySession(familyId) {
+  if (!familyId) return null;
+
+  try {
+    let { data: { session } } = await supabase.auth.getSession();
+
+    // 1. 세션이 없으면 익명 세션 생성
+    if (!session?.user) {
+      const { data: anonData, error: anonError } = await supabase.auth.signInAnonymously();
+      if (anonError) {
+        console.warn('익명 세션 생성 주의:', anonError);
+        return null;
+      }
+      session = anonData?.session;
+    }
+
+    // 2. family_members 테이블에 매핑 등록 (DB RLS 접근 권한 획득)
+    if (session?.user) {
+      try {
+        await supabase
+          .from('family_members')
+          .upsert(
+            { family_id: familyId, user_id: session.user.id },
+            { onConflict: 'family_id,user_id' }
+          );
+      } catch (upsertErr) {
+        console.warn('family_members 등록 스킵:', upsertErr);
+      }
+    }
+
+    return session;
+  } catch (err) {
+    console.warn('가족 인증 세션 동기화 중 오류 (기존 흐름 유지):', err);
+    return null;
   }
 }
 
@@ -116,6 +155,9 @@ export async function createFamily({ familyName, parentPin = '1234' }) {
     console.error('가족 생성 실패:', familyError);
     throw familyError || new Error('가족 코드 생성에 실패했습니다.');
   }
+
+  // 1-1. 신규 가족을 위한 익명 인증 세션 즉시 연결 (RLS 통과용)
+  await ensureFamilySession(family.id);
 
   // 2. 신규 가족을 위한 기본 아이 프로필 생성
   try {

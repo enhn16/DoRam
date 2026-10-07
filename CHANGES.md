@@ -71,4 +71,13 @@
   - `flex-col sm:flex-row` 강제 2줄 중단점을 제거하고 `flex-wrap` 및 컴팩트 버튼 패딩 적용
   - 일반 모바일(360px~430px) 화면에서 "내 쿠폰함"과 탭 토글이 한 줄로 단정하게 유지되며, 세 글자 여백(약 10~20px) 이하로 극도로 좁아질 때만 유연하게 줄바꿈되도록 튜닝 완료
 
+### [2026-10-07] 익명 인증(Anonymous Auth) 기반 DB 완전 격리 및 28개 RLS Warning 해소
+* **요청**: Supabase Security Advisor 28개 Warning(`RLS Policy Always True`) 완전 해소 및 다중 사용자 보안 강화
+* **변경 파일**: [`supabase/migration_02_anonymous_auth_and_rls.sql`](file:///c:/developer/doram/supabase/migration_02_anonymous_auth_and_rls.sql), [`src/services/familyService.js`](file:///c:/developer/doram/src/services/familyService.js), [`src/App.jsx`](file:///c:/developer/doram/src/App.jsx), [`CHANGES.md`](file:///c:/developer/doram/CHANGES.md)
+* **요약**:
+  - `familyService.js`: `ensureFamilySession` 함수 신설, 가족 식별 시 백그라운드 익명 로그인(`signInAnonymously`) 세션 자동 발급 및 `family_members` 매핑 연동
+  - `App.jsx`: 초기 접속 및 가족 선택/생성 시 백그라운드 인증 세션을 확보한 후 격리 데이터를 조회하도록 파이프라인 연계
+  - `migration_02_anonymous_auth_and_rls.sql`: `USING (true)` 임시 정책을 전면 일괄 제거하고 `family_members` 매핑 기반 인라인 RLS 정책을 적용하여 DB 레벨 Zero Trust 격리 완성 및 치명적 Error 0건 달성
+
+
 

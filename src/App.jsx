@@ -47,6 +47,7 @@ import {
   getSavedFamilyCode,
   saveFamilyCode,
   clearSavedFamilyCode,
+  ensureFamilySession,
 } from './services/familyService';
 
 import { Header } from './components/Header';
@@ -255,6 +256,7 @@ export default function App() {
         }
 
         if (family) {
+          await ensureFamilySession(family.id);
           setCurrentFamily(family);
           await loadAllData(family.id);
         }
@@ -276,6 +278,7 @@ export default function App() {
     try {
       const family = await fetchFamilyByCode(code);
       if (!family) return false;
+      await ensureFamilySession(family.id);
       setCurrentFamily(family);
       saveFamilyCode(family.family_code);
       await loadAllData(family.id);
@@ -289,6 +292,7 @@ export default function App() {
   const handleCreateFamily = async ({ familyName, parentPin }) => {
     try {
       const created = await createFamily({ familyName, parentPin });
+      await ensureFamilySession(created.id);
       setCurrentFamily(created);
       saveFamilyCode(created.family_code);
       await loadAllData(created.id);
