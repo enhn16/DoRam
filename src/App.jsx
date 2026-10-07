@@ -50,6 +50,16 @@ import {
   ensureFamilySession,
 } from './services/familyService';
 
+import { supabase } from './services/supabase';
+import { playSuccessChime } from './utils/audio';
+import {
+  initOneSignal,
+  registerParentPush,
+  sendPushNotification,
+} from './services/notificationService';
+import { motion, AnimatePresence } from 'motion/react';
+import { Bell, X, Sparkles, Ticket } from 'lucide-react';
+
 import { Header } from './components/Header';
 import { BottomNav } from './components/BottomNav';
 import { LoginScreen } from './components/LoginScreen';
@@ -99,6 +109,9 @@ export default function App() {
 
   // Loading States
   const [loading, setLoading] = useState(true);
+
+  // In-App Toast Notification
+  const [toastNotification, setToastNotification] = useState(null);
 
   // =========================================================
   // Supabase Data Load by Family ID
@@ -220,6 +233,85 @@ export default function App() {
   };
 
   // =========================================================
+  // OneSignal Push & Supabase Realtime Subscription
+  // =========================================================
+
+  // 1. OneSignal 초기화
+  useEffect(() => {
+    initOneSignal();
+  }, []);
+
+  // 2. 보호자 로그인 시 OneSignal External ID 등록
+  useEffect(() => {
+    if (isLoggedIn && role === 'parent' && currentFamily?.id) {
+      registerParentPush(currentFamily.id);
+    }
+  }, [isLoggedIn, role, currentFamily?.id]);
+
+  // 3. 토스트 팝업 5초 자동 닫힘
+  useEffect(() => {
+    if (toastNotification) {
+      const timer = setTimeout(() => {
+        setToastNotification(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [toastNotification]);
+
+  // 4. 보호자 화면 실시간(Supabase Realtime) 동기화
+  useEffect(() => {
+    if (!isLoggedIn || !currentFamily?.id || role !== 'parent') return;
+
+    const channel = supabase
+      .channel(`family-realtime-${currentFamily.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'goal_records',
+          filter: `family_id=eq.${currentFamily.id}`,
+        },
+        (payload) => {
+          if (payload.new?.status === 'pending') {
+            setToastNotification({
+              type: 'goal',
+              title: '새로운 목표 달성 요청!',
+              message: '🧒 아이가 목표를 달성했습니다. 확인해주세요! ✨',
+            });
+            playSuccessChime();
+            loadAllData(currentFamily.id);
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'user_coupons',
+          filter: `family_id=eq.${currentFamily.id}`,
+        },
+        (payload) => {
+          if (payload.new?.memo === 'pending') {
+            setToastNotification({
+              type: 'coupon',
+              title: '쿠폰 사용 요청!',
+              message: '🎟️ 아이가 쿠폰 사용을 신청했습니다. 승인해주세요!',
+            });
+            playSuccessChime();
+            loadAllData(currentFamily.id);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [isLoggedIn, role, currentFamily?.id]);
+
+  // =========================================================
   // Initial App Mount: Load Family & Cache Check
   // =========================================================
 
@@ -315,11 +407,15 @@ export default function App() {
   };
 
   // =========================================================
-  // Pending Count
+  // Pending Count (목표 대기 건수 & 쿠폰 사용 신청 건수)
   // =========================================================
 
   const pendingCount = submissions.filter(
     (s) => s.status === 'pending'
+  ).length;
+
+  const pendingCouponCount = userCoupons.filter(
+    (c) => c.status === 'active' && c.memo === 'pending'
   ).length;
 
   // =========================================================
@@ -394,6 +490,13 @@ export default function App() {
       };
 
       setSubmissions((prev) => [newSubmission, ...prev]);
+
+      // 보호자에게 스마트폰 푸시 알림 발송 (백그라운드)
+      sendPushNotification({
+        familyId: currentFamily?.id,
+        title: '🌱 [두람] 목표 달성 완료!',
+        message: `🧒 ${profile.name || '아이'}이가 '${goal.title}' 목표를 완료했어요! 확인해주세요 ✨`,
+      });
     } catch (error) {
       alert('미션 제출에 실패했습니다.');
     }
@@ -593,6 +696,14 @@ export default function App() {
             : p
         )
       );
+
+      const targetPass = userCoupons.find((p) => p.id === passId);
+      // 보호자에게 스마트폰 푸시 알림 발송 (백그라운드)
+      sendPushNotification({
+        familyId: currentFamily?.id,
+        title: '🎟️ [두람] 쿠폰 사용 확인 요청!',
+        message: `🎟️ ${profile.name || '아이'}이가 '${targetPass?.title || '쿠폰'}' 사용을 신청했어요! 확인해주세요.`,
+      });
     } catch (error) {
       alert('쿠폰 사용 신청에 실패했습니다.');
     }
@@ -876,11 +987,66 @@ export default function App() {
         )}
       </main>
 
+      {/* Realtime Toast Notification Banner */}
+      <AnimatePresence>
+        {toastNotification && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4"
+          >
+            <div
+              onClick={() => {
+                if (toastNotification.type === 'goal') {
+                  setActiveTab('admin-home');
+                } else {
+                  setActiveTab('admin-coupons');
+                }
+                setToastNotification(null);
+              }}
+              className="cursor-pointer bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-xl border-2 border-purple-400 flex items-start gap-3 text-slate-900 transition hover:scale-[1.02]"
+            >
+              <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shrink-0 border border-purple-200">
+                {toastNotification.type === 'goal' ? (
+                  <Sparkles className="w-5 h-5 text-purple-600 animate-pulse" />
+                ) : (
+                  <Ticket className="w-5 h-5 text-purple-600 animate-pulse" />
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-1">
+                  <h4 className="text-xs font-black text-purple-900">
+                    {toastNotification.title}
+                  </h4>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setToastNotification(null);
+                    }}
+                    className="text-slate-400 hover:text-slate-600 p-0.5 rounded-lg"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                <p className="text-xs text-slate-700 font-semibold mt-0.5 truncate">
+                  {toastNotification.message}
+                </p>
+                <p className="text-[10px] text-purple-600 font-extrabold mt-1">
+                  👉 터치하여 바로 확인하기
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <BottomNav
         role={role}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         pendingCount={pendingCount}
+        pendingCouponCount={pendingCouponCount}
       />
     </div>
   );

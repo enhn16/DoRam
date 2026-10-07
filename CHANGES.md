@@ -4,6 +4,17 @@
 
 ---
 
+### [2026-10-07] OneSignal 스마트폰 웹 푸시 & Supabase Realtime 알림 구축
+* **요청**: 목표 달성 및 쿠폰 사용 요청 시 보호자에게 스마트폰 상단바 푸시 및 실시간 인앱 알림 전송
+* **변경 파일**: [`public/OneSignalSDKWorker.js`](file:///c:/developer/doram/public/OneSignalSDKWorker.js), [`src/services/notificationService.js`](file:///c:/developer/doram/src/services/notificationService.js), [`api/send-push.js`](file:///c:/developer/doram/api/send-push.js), [`src/pages/AdminSettings.jsx`](file:///c:/developer/doram/src/pages/AdminSettings.jsx), [`src/components/BottomNav.jsx`](file:///c:/developer/doram/src/components/BottomNav.jsx), [`src/App.jsx`](file:///c:/developer/doram/src/App.jsx), [`index.html`](file:///c:/developer/doram/index.html), [`.env.local`](file:///c:/developer/doram/.env.local), [`.env.example`](file:///c:/developer/doram/.env.example)
+* **요약**:
+  - `OneSignalSDKWorker.js` & `index.html`: 백그라운드 푸시 수신 서비스 워커 및 OneSignal v16 SDK 연동
+  - `notificationService.js` & `api/send-push.js`: 가족별 보호자 타겟팅(`external_id`) 기반 푸시 권한 요청 및 안전한 Vercel 서버리스 발송 파이프라인 구축
+  - `AdminSettings.jsx`: 관리자 설정 탭에 "스마트폰 푸시 알림" 허용/상태 카드 추가
+  - `BottomNav.jsx`: 쿠폰 관리 탭에도 `pendingCouponCount` 뱃지 카운트 실시간 지원
+  - `App.jsx`: 아이의 목표 달성 및 쿠폰 신청 시 푸시 자동 발송 연동, 관리자 접속 시 Supabase Realtime 기반 화면 상단 실시간 토스트 팝업 및 효과음 동기화 완료
+
+
 ### [2026-10-06] 다중 사용자 기반 문서 및 개발 규칙 수립
 * **요청**: 공모전 대비 다중 사용자 확장 가이드, 데이터 보존 및 아키텍처 수립, 로그 분리
 * **변경 파일**: [`AGENTS.md`](file:///c:/developer/doram/AGENTS.md), [`ROADMAP.md`](file:///c:/developer/doram/ROADMAP.md), [`CHANGES.md`](file:///c:/developer/doram/CHANGES.md)

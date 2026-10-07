@@ -6,6 +6,7 @@ export const BottomNav = ({
   activeTab,
   setActiveTab,
   pendingCount,
+  pendingCouponCount = 0,
 }) => {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-slate-200/80 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] h-16 px-2 flex items-center justify-center">
@@ -85,13 +86,20 @@ export const BottomNav = ({
 
             <button
               onClick={() => setActiveTab('admin-coupons')}
-              className={`flex-1 h-full flex flex-col items-center justify-center gap-0.5 transition-all rounded-xl ${
+              className={`flex-1 h-full flex flex-col items-center justify-center gap-0.5 transition-all relative rounded-xl ${
                 activeTab === 'admin-coupons'
                   ? 'text-purple-700 font-bold bg-purple-100 scale-105'
                   : 'text-slate-400 hover:text-slate-600'
               }`}
             >
-              <Ticket className={`w-5 h-5 shrink-0 ${activeTab === 'admin-coupons' ? 'stroke-[2.5px]' : ''}`} />
+              <div className="relative shrink-0">
+                <Ticket className={`w-5 h-5 ${activeTab === 'admin-coupons' ? 'stroke-[2.5px]' : ''}`} />
+                {pendingCouponCount > 0 && (
+                  <span className="absolute -top-1 -right-2.5 w-4 h-4 bg-purple-600 text-white text-[10px] font-extrabold rounded-full flex items-center justify-center animate-bounce">
+                    {pendingCouponCount}
+                  </span>
+                )}
+              </div>
               <span className="text-[11px] leading-none font-semibold whitespace-nowrap">쿠폰 관리</span>
             </button>
 

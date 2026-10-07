@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import {
   Settings,
   Home,
@@ -10,14 +9,45 @@ import {
   Save,
   AlertCircle,
   ExternalLink,
+  Bell,
+  BellRing,
+  Smartphone,
+  CheckCircle2,
 } from 'lucide-react';
 import { motion } from 'motion/react';
+import {
+  getPushPermissionState,
+  requestPushPermission,
+} from '../services/notificationService';
 
 export const AdminSettings = ({
   currentFamily,
   onUpdateFamilyName,
   onUpdateFamilyPin,
 }) => {
+  // 알림 권한 상태 ('granted', 'denied', 'default', 'unsupported')
+  const [pushStatus, setPushStatus] = useState('default');
+  const [pushLoading, setPushLoading] = useState(false);
+
+  React.useEffect(() => {
+    getPushPermissionState().then((status) => {
+      setPushStatus(status);
+    });
+  }, []);
+
+  const handleEnablePush = async () => {
+    setPushLoading(true);
+    try {
+      const granted = await requestPushPermission();
+      setPushStatus(granted ? 'granted' : 'denied');
+      if (granted) {
+        alert('🎉 알림이 허용되었습니다! 이제 스마트폰으로 두람 알림을 받으실 수 있습니다.');
+      }
+    } finally {
+      setPushLoading(false);
+    }
+  };
+
   // 1. 가족 이름 상태
   const [familyNameInput, setFamilyNameInput] = useState(
     currentFamily?.family_name || ''
@@ -140,7 +170,81 @@ export const AdminSettings = ({
         </div>
       </div>
 
-      {/* 2. 가족 공유 & 초대 링크 섹션 */}
+      {/* 2. 스마트폰 푸시 알림 설정 섹션 */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white rounded-3xl p-5 border border-purple-200/80 shadow-xs space-y-3.5"
+      >
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center font-bold border border-purple-200">
+              <BellRing className="w-4 h-4 text-purple-600" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                <span>스마트폰 푸시 알림</span>
+              </h3>
+              <p className="text-[11px] text-slate-400">
+                아이의 목표 달성 및 쿠폰 요청 시 폰 상단바로 알림을 받습니다.
+              </p>
+            </div>
+          </div>
+
+          <div>
+            {pushStatus === 'granted' ? (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-black bg-emerald-100 text-emerald-800 border border-emerald-200">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                <span>알림 켜짐</span>
+              </span>
+            ) : pushStatus === 'denied' ? (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-black bg-rose-100 text-rose-800 border border-rose-200">
+                <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
+                <span>알림 차단됨</span>
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                <Bell className="w-3.5 h-3.5 text-slate-500" />
+                <span>알림 꺼짐</span>
+              </span>
+            )}
+          </div>
+        </div>
+
+        {pushStatus === 'granted' ? (
+          <div className="p-3 bg-purple-50/60 rounded-2xl border border-purple-100 flex items-center gap-2.5">
+            <Smartphone className="w-5 h-5 text-purple-600 shrink-0" />
+            <p className="text-xs text-purple-900 font-medium">
+              안드로이드 스마트폰에 푸시 알림이 정상 연결되었습니다. 브라우저가 닫혀 있어도 진동/소리로 알림이 옵니다.
+            </p>
+          </div>
+        ) : pushStatus === 'denied' ? (
+          <div className="p-3 bg-rose-50 rounded-2xl border border-rose-200 flex items-center gap-2.5">
+            <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
+            <p className="text-xs text-rose-800 font-medium">
+              브라우저에서 알림이 차단되어 있습니다. 주소창 왼쪽의 자물쇠/설정 아이콘을 눌러 알림을 허용해주세요.
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 p-3 bg-purple-50/40 rounded-2xl border border-purple-100">
+            <p className="text-xs text-slate-600 font-medium flex items-center gap-1.5">
+              <Smartphone className="w-4 h-4 text-purple-600 shrink-0" />
+              <span>화면이 꺼져 있어도 실시간으로 알림을 받아보세요.</span>
+            </p>
+            <button
+              type="button"
+              onClick={handleEnablePush}
+              disabled={pushLoading}
+              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 active:scale-98 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-xs disabled:opacity-50 shrink-0"
+            >
+              <Bell className="w-3.5 h-3.5" />
+              <span>{pushLoading ? '연결 중...' : '🔔 알림 허용하기'}</span>
+            </button>
+          </div>
+        )}
+      </motion.div>
+
+      {/* 3. 가족 공유 & 초대 링크 섹션 */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
