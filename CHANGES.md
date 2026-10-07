@@ -86,7 +86,7 @@
 * **요청**: Supabase Security Advisor 28개 Warning(`RLS Policy Always True`) 완전 해소 및 다중 사용자 보안 강화
 * **변경 파일**: [`supabase/migration_02_anonymous_auth_and_rls.sql`](file:///c:/developer/doram/supabase/migration_02_anonymous_auth_and_rls.sql), [`src/services/familyService.js`](file:///c:/developer/doram/src/services/familyService.js), [`src/App.jsx`](file:///c:/developer/doram/src/App.jsx), [`CHANGES.md`](file:///c:/developer/doram/CHANGES.md)
 * **요약**:
-  - `familyService.js`: `ensureFamilySession` 함수 신설, 가족 식별 시 백그라운드 익명 로그인(`signInAnonymously`) 세션 자동 발급 및 `family_members` 매핑 연동
+  - `familyService.js`: `ensureFamilySession` 함수 신설, 가족 식별 시 백그라운드 익명 로그인(`signInAnonymously`) 세션 자동 발급 및 `family_members` 매핑 연동 (중복 시 RLS 거부 방지를 위해 안전한 조회 후 등록 적용)
   - `App.jsx`: 초기 접속 및 가족 선택/생성 시 백그라운드 인증 세션을 확보한 후 격리 데이터를 조회하도록 파이프라인 연계
   - `migration_02_anonymous_auth_and_rls.sql`: `USING (true)` 임시 정책을 전면 일괄 제거하고 `family_members` 매핑 기반 인라인 RLS 정책을 적용하여 DB 레벨 Zero Trust 격리 완성 및 치명적 Error 0건 달성
 

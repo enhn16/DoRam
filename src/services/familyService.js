@@ -54,14 +54,20 @@ export async function ensureFamilySession(familyId) {
     // 2. family_members 테이블에 매핑 등록 (DB RLS 접근 권한 획득)
     if (session?.user) {
       try {
-        await supabase
+        const { data: existing } = await supabase
           .from('family_members')
-          .upsert(
-            { family_id: familyId, user_id: session.user.id },
-            { onConflict: 'family_id,user_id' }
-          );
-      } catch (upsertErr) {
-        console.warn('family_members 등록 스킵:', upsertErr);
+          .select('id')
+          .eq('family_id', familyId)
+          .eq('user_id', session.user.id)
+          .maybeSingle();
+
+        if (!existing) {
+          await supabase
+            .from('family_members')
+            .insert({ family_id: familyId, user_id: session.user.id });
+        }
+      } catch (memberErr) {
+        console.warn('family_members 등록 스킵:', memberErr);
       }
     }
 
