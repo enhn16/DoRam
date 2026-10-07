@@ -4,6 +4,19 @@
 
 ---
 
+### [2026-10-07] 관리자 설정 탭 진입 시 빈 화면(화이트아웃) 버그 수정
+* **요청**: 관리자 모드에서 '설정' 탭 진입 시 화면이 하얗게(빈 화면) 나오는 문제 해결
+* **변경 파일**: [`src/pages/AdminSettings.jsx`](file:///c:/developer/doram/src/pages/AdminSettings.jsx)
+* **요약**:
+  - `AdminSettings.jsx` 내 `useState`, `useEffect` 및 `React` 미임포트로 인해 발생한 런타임 `ReferenceError: useState is not defined` 에러 해결
+  - `currentFamily` 상태 변경 시 가족 이름 인풋(`familyNameInput`)이 자동 동기화되도록 보강
+
+### [2026-10-07] README.md 프로젝트 명세 최신화
+* **요청**: 다중 가족 지원, 푸시/실시간 알림 및 현재 기능 스펙에 맞게 README 간결 업데이트
+* **변경 파일**: [`README.md`](file:///c:/developer/doram/README.md)
+* **요약**:
+  - 다중 가족 구조(가족 코드/PIN), 실시간 알림(OneSignal/Realtime), 쿠폰/목표 승인 시스템 및 최신 기술 스택 명세 반영 완료
+
 ### [2026-10-07] OneSignal 스마트폰 웹 푸시 & Supabase Realtime 알림 구축
 * **요청**: 목표 달성 및 쿠폰 사용 요청 시 보호자에게 스마트폰 상단바 푸시 및 실시간 인앱 알림 전송
 * **변경 파일**: [`public/OneSignalSDKWorker.js`](file:///c:/developer/doram/public/OneSignalSDKWorker.js), [`src/services/notificationService.js`](file:///c:/developer/doram/src/services/notificationService.js), [`api/send-push.js`](file:///c:/developer/doram/api/send-push.js), [`src/pages/AdminSettings.jsx`](file:///c:/developer/doram/src/pages/AdminSettings.jsx), [`src/components/BottomNav.jsx`](file:///c:/developer/doram/src/components/BottomNav.jsx), [`src/App.jsx`](file:///c:/developer/doram/src/App.jsx), [`index.html`](file:///c:/developer/doram/index.html), [`.env.local`](file:///c:/developer/doram/.env.local), [`.env.example`](file:///c:/developer/doram/.env.example)

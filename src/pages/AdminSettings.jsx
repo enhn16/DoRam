@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import {
   Settings,
   Home,
@@ -29,7 +30,7 @@ export const AdminSettings = ({
   const [pushStatus, setPushStatus] = useState('default');
   const [pushLoading, setPushLoading] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     getPushPermissionState().then((status) => {
       setPushStatus(status);
     });
@@ -54,6 +55,12 @@ export const AdminSettings = ({
   );
   const [isUpdatingName, setIsUpdatingName] = useState(false);
   const [nameSuccessMessage, setNameSuccessMessage] = useState(false);
+
+  useEffect(() => {
+    if (currentFamily?.family_name) {
+      setFamilyNameInput(currentFamily.family_name);
+    }
+  }, [currentFamily?.family_name]);
 
   // 2. PIN 번호 상태
   const [currentPinInput, setCurrentPinInput] = useState('');
