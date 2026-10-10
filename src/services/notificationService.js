@@ -129,7 +129,18 @@ export const sendPushNotification = async ({ familyId, targetRole = 'parent', ti
   if (!familyId || !message) return null;
 
   try {
-    const response = await fetch('/api/send-push', {
+    // 로컬 개발 환경(localhost, 127.0.0.1, 사설 IP)에서도 Vercel 서버리스 API로 직접 요청하여 푸시 보장
+    const isLocal =
+      typeof window !== 'undefined' &&
+      (window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1' ||
+        window.location.hostname.startsWith('192.168.'));
+
+    const endpoint = isLocal
+      ? 'https://doram.vercel.app/api/send-push'
+      : '/api/send-push';
+
+    const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

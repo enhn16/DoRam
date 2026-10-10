@@ -46,12 +46,17 @@ export default async function handler(req, res) {
       });
     }
 
-    // 해당 가족 및 역할(role: parent 또는 child)의 태그 기반 발송
-    // (OneSignal v16 Web Push에서 가장 안정적이고 확실한 타겟팅 방식)
+    // 해당 가족(family_id) 및 대상 역할(role: parent 또는 child) 태그 기반 발송
     const filters = [
       { field: 'tag', key: 'family_id', relation: '=', value: familyId },
-      { field: 'tag', key: 'role', relation: '=', value: finalRole },
     ];
+
+    if (finalRole) {
+      filters.push(
+        { operator: 'AND' },
+        { field: 'tag', key: 'role', relation: '=', value: finalRole }
+      );
+    }
 
     const payload = {
       app_id: appId,

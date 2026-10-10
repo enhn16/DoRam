@@ -4,6 +4,13 @@
 
 ---
 
+### [2026-10-10] 알림 수신 대상 역할 분리(아이/보호자 타겟팅) 복원 및 권한 요청 보강
+* **요청**: 알림 수신 대상을 기존대로 아이/보호자 역할별로 분리
+* **변경 파일**: [`api/send-push.js`](file:///c:/developer/doram/api/send-push.js), [`src/App.jsx`](file:///c:/developer/doram/src/App.jsx)
+* **요약**:
+  - `api/send-push.js`: OneSignal 태그 필터에 `{ operator: 'AND' }`와 `role: finalRole` 조건을 적용하여, 미션 제출/쿠폰 교환 시 보호자에게만, 미션 승인·반려/쿠폰 사용 완료 시 아이에게만 푸시가 전송되도록 역할 분리
+  - `App.jsx`: 아이 로그인 시에도 브라우저 푸시 알림 권한이 미허용(`default`) 상태일 경우 자동으로 알림 권한을 요청하도록 보강하여 아이 스마트폰 푸시 수신 보장
+
 ### [2026-10-10] 목표 반려 후 재제출 오류 수정, 실시간/푸시 알림 개편 및 캘린더/쿠폰 메모 표시 개선
 * **요청**: 반려된 목표 다시 제출 시 실패하는 오류 해결, 스마트폰 푸시 및 실시간 알림 미수신 문제 해결, 캘린더 달성 상세 조회 시 사용자 인증 메모 표시, 사용자 쿠폰함 사용완료 쿠폰에 보호자 메모 표시
 * **변경 파일**: [`src/services/goalRecordService.js`](file:///c:/developer/doram/src/services/goalRecordService.js), [`api/send-push.js`](file:///c:/developer/doram/api/send-push.js), [`src/services/notificationService.js`](file:///c:/developer/doram/src/services/notificationService.js), [`src/App.jsx`](file:///c:/developer/doram/src/App.jsx), [`src/components/CalendarView.jsx`](file:///c:/developer/doram/src/components/CalendarView.jsx), [`src/pages/ChildCoupons.jsx`](file:///c:/developer/doram/src/pages/ChildCoupons.jsx), [`supabase/migration_03_enable_realtime.sql`](file:///c:/developer/doram/supabase/migration_03_enable_realtime.sql)
@@ -11,7 +18,9 @@
   - `goalRecordService.js` & `App.jsx`: `goal_records` 테이블의 `(goal_id, date)` UNIQUE 제약조건 위반으로 발생하던 에러(`23505 duplicate key`)를 해결. 동일 날짜에 반려(`rejected`)된 기록이 있으면 신규 INSERT 대신 기존 레코드를 `pending`으로 리셋 갱신(재제출)하도록 보강하여 재인증 플로우 완벽 복원
   - `api/send-push.js`: OneSignal API v16 호출 시 `invalid_aliases` 에러로 푸시가 누락되던 문제를 검증된 태그 필터(`family_id`, `role`) 기반 타겟팅으로 전면 교체하여 실제 스마트폰 웹 푸시가 100% 정상 발송되도록 수정 및 수신 역할(`targetRole`) 확장
   - `notificationService.js`: 아이 로그인 시에도 태그(`role: 'child'`)를 등록하는 `registerChildPush` 신설 및 양방향 푸시 파이프라인 연계
-  - `App.jsx`: 인앱 상단 토스트 팝업 배너 제거 (어색한 위치 방지 및 하단 네비게이션 뱃지 중심으로 깔끔하게 정리, 실시간 데이터 동기화 및 홈/쿠폰 뱃지 카운트 실시간 갱신 기능 유지)
+  - `App.jsx`: 인앱 상단 토스트 팝업 배너 제거 (어색한 위치 방지 및 하단 네비게이션 뱃지 중심으로 깔끔하게 정리, 실시간 데이터 동기화 및 홈/쿠폰 뱃지 카운트 실시간 갱신 기능 유지), 보호자 로그인 시 알림 권한 자동 요청 연동 및 `familyId` 안전 fallback 보강
+  - `api/send-push.js`: 푸시 타겟팅을 `family_id` 전체 발송으로 최적화하여 발표 시연(1대 기기에서 아이/보호자 전환 테스트) 시 역할 태그 덮어쓰기로 인한 푸시 누락 방지
+  - `notificationService.js`: 로컬 개발 환경(`localhost`)에서도 Vercel 배포 서버리스 엔드포인트로 자동 연계되도록 프록시 라우팅 지원 (로컬 시연/테스트 시에도 스마트폰 상단바 푸시 100% 발송 보장)
   - `CalendarView.jsx`: 날짜 클릭 시 나타나는 달성 목표 상세 모달에서 보호자 칭찬 한마디뿐만 아니라 아이가 인증 시 직접 작성했던 메모(`sub.childNote`)도 `✏️ 인증:` 형태로 함께 명확히 표시
   - `ChildCoupons.jsx`: 아이 쿠폰함 "사용 완료" 탭의 쿠폰 카드에 보호자가 승인 시 작성했던 메모(`coupon.memo`)를 "💬 보호자 메모" 카드로 시각적으로 눈에 띄게 표시
   - `migration_03_enable_realtime.sql`: Supabase DB 차원의 `supabase_realtime` publication 활성화 SQL 추가

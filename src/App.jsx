@@ -57,6 +57,7 @@ import {
   registerParentPush,
   registerChildPush,
   sendPushNotification,
+  requestPushPermission,
 } from './services/notificationService';
 import confetti from 'canvas-confetti';
 
@@ -238,13 +239,17 @@ export default function App() {
     initOneSignal();
   }, []);
 
-  // 2. 역할별 OneSignal Push 타겟 태그 등록
+  // 2. 역할별 OneSignal Push 타겟 태그 등록 및 알림 허용 요청
   useEffect(() => {
     if (isLoggedIn && currentFamily?.id) {
       if (role === 'parent') {
         registerParentPush(currentFamily.id);
       } else if (role === 'child') {
         registerChildPush(currentFamily.id);
+      }
+
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+        requestPushPermission();
       }
     }
   }, [isLoggedIn, role, currentFamily?.id]);
@@ -541,7 +546,7 @@ export default function App() {
 
       // 보호자에게 스마트폰 푸시 알림 발송 (백그라운드)
       sendPushNotification({
-        familyId: currentFamily?.id,
+        familyId: currentFamily?.id || profile?.family_id,
         targetRole: 'parent',
         title: '🌱 [두람] 목표 달성 완료!',
         message: `🧒 ${profile.name || '아이'}이가 '${goal.title}' 목표를 완료했어요! 확인해주세요 ✨`,
@@ -638,7 +643,7 @@ export default function App() {
 
       // 아이 스마트폰 푸시 알림 발송 (백그라운드)
       sendPushNotification({
-        familyId: currentFamily?.id,
+        familyId: currentFamily?.id || profile?.family_id,
         targetRole: 'child',
         title: '🎉 [두람] 목표 달성 승인!',
         message: `👏 '${sub.goalTitle}' 목표가 승인되어 +${sub.points}P를 받았어요! ✨`,
@@ -682,7 +687,7 @@ export default function App() {
 
       // 아이 스마트폰 푸시 알림 발송 (백그라운드)
       sendPushNotification({
-        familyId: currentFamily?.id,
+        familyId: currentFamily?.id || profile?.family_id,
         targetRole: 'child',
         title: '✏️ [두람] 목표 확인 필요',
         message: `'${sub?.goalTitle || '목표'}' 내용을 다시 확인하고 재도전해보세요!`,
@@ -798,7 +803,7 @@ export default function App() {
 
       // 보호자에게 스마트폰 푸시 알림 발송 (백그라운드)
       sendPushNotification({
-        familyId: currentFamily?.id,
+        familyId: currentFamily?.id || profile?.family_id,
         targetRole: 'parent',
         title: '🎟️ [두람] 쿠폰 사용 확인 요청!',
         message: `🎟️ ${profile.name || '아이'}이가 '${targetPass?.title || '쿠폰'}' 사용을 신청했어요! 확인해주세요.`,
@@ -866,7 +871,7 @@ export default function App() {
 
       // 아이 스마트폰 푸시 알림 발송 (백그라운드)
       sendPushNotification({
-        familyId: currentFamily?.id,
+        familyId: currentFamily?.id || profile?.family_id,
         targetRole: 'child',
         title: '🎟️ [두람] 쿠폰 사용 확인 완료!',
         message: `'${targetPass?.title || '쿠폰'}' 사용이 확인되었습니다!`,
