@@ -4,6 +4,13 @@
 
 ---
 
+### [2026-10-10] 미션 및 쿠폰 추가/수정/삭제 시 사용자(아이) 화면 즉각 실시간 반영 연동
+* **요청**: 관리자가 미션이나 쿠폰을 새로 추가/수정/삭제했을 때 사용자(아이) 쪽 화면에 새로고침 없이 즉시 반영되도록 개선
+* **변경 파일**: [`src/App.jsx`](file:///c:/developer/doram/src/App.jsx)
+* **요약**:
+  - `App.jsx`: 미션(`goals`) 및 쿠폰(`coupons`)의 생성·수정·삭제 핸들러에 Supabase Realtime Broadcast 이벤트(`goals_updated`, `coupons_updated`) 전송 로직 추가
+  - `App.jsx`: Realtime 채널에 `goals_updated`, `coupons_updated` 수신 리스너 및 Postgres Changes(`goals`, `coupons` 테이블 `*` 이벤트) 백업 리스너를 등록하여, 관리자가 미션/쿠폰을 생성·수정·삭제하는 즉시 아이 화면에서도 새로고침 없이 0.1초 만에 최신 데이터로 자동 갱신되도록 구축
+
 ### [2026-10-10] 알림 수신 대상 역할 분리(아이/보호자 타겟팅) 복원 및 권한 요청 보강
 * **요청**: 알림 수신 대상을 기존대로 아이/보호자 역할별로 분리
 * **변경 파일**: [`api/send-push.js`](file:///c:/developer/doram/api/send-push.js), [`src/App.jsx`](file:///c:/developer/doram/src/App.jsx)

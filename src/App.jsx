@@ -304,7 +304,37 @@ export default function App() {
           loadAllData(currentFamily.id);
         }
       })
+      .on('broadcast', { event: 'goals_updated' }, () => {
+        loadAllData(currentFamily.id);
+      })
+      .on('broadcast', { event: 'coupons_updated' }, () => {
+        loadAllData(currentFamily.id);
+      })
       // [B] Postgres Changes 리스너 (DB 직접 변경 보조 백업)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'goals',
+          filter: `family_id=eq.${currentFamily.id}`,
+        },
+        () => {
+          loadAllData(currentFamily.id);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'coupons',
+          filter: `family_id=eq.${currentFamily.id}`,
+        },
+        () => {
+          loadAllData(currentFamily.id);
+        }
+      )
       .on(
         'postgres_changes',
         {
@@ -925,6 +955,10 @@ export default function App() {
     try {
       const newGoal = await createGoal(goalData, currentFamily?.id);
       setGoals((prev) => [newGoal, ...prev]);
+      realtimeChannelRef.current?.send({
+        type: 'broadcast',
+        event: 'goals_updated',
+      });
     } catch (error) {
       alert('목표를 추가하지 못했습니다.');
     }
@@ -936,6 +970,10 @@ export default function App() {
       setGoals((prev) =>
         prev.map((g) => (g.id === savedGoal.id ? savedGoal : g))
       );
+      realtimeChannelRef.current?.send({
+        type: 'broadcast',
+        event: 'goals_updated',
+      });
     } catch (error) {
       alert('목표를 수정하지 못했습니다.');
     }
@@ -945,6 +983,10 @@ export default function App() {
     try {
       await deleteGoal(goalId);
       setGoals((prev) => prev.filter((g) => g.id !== goalId));
+      realtimeChannelRef.current?.send({
+        type: 'broadcast',
+        event: 'goals_updated',
+      });
     } catch (error) {
       alert('목표를 삭제하지 못했습니다.');
     }
@@ -962,6 +1004,10 @@ export default function App() {
         requiredPoints: created.required_points,
       };
       setCoupons((prev) => [newCoupon, ...prev]);
+      realtimeChannelRef.current?.send({
+        type: 'broadcast',
+        event: 'coupons_updated',
+      });
     } catch (error) {
       alert('쿠폰을 추가하지 못했습니다.');
     }
@@ -977,6 +1023,10 @@ export default function App() {
       setCoupons((prev) =>
         prev.map((c) => (c.id === updatedCoupon.id ? updatedCoupon : c))
       );
+      realtimeChannelRef.current?.send({
+        type: 'broadcast',
+        event: 'coupons_updated',
+      });
     } catch (error) {
       alert('쿠폰을 수정하지 못했습니다.');
     }
@@ -986,6 +1036,10 @@ export default function App() {
     try {
       await deleteCoupon(couponId);
       setCoupons((prev) => prev.filter((c) => c.id !== couponId));
+      realtimeChannelRef.current?.send({
+        type: 'broadcast',
+        event: 'coupons_updated',
+      });
     } catch (error) {
       alert('쿠폰을 삭제하지 못했습니다.');
     }
