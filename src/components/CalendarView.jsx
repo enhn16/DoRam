@@ -172,26 +172,36 @@ export const CalendarView = ({ submissions, role = 'child' }) => {
                 </h3>
               </div>
 
-              <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+              <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
                 {selectedDaySubmissions.items.map((sub) => (
                   <div
                     key={sub.id}
-                    className="p-3 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-2"
+                    className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col gap-2"
                   >
-                    <div className="min-w-0">
-                      <div className="font-bold text-xs text-slate-800 truncate">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-bold text-xs text-slate-900 truncate">
                         {sub.goalTitle}
-                      </div>
-                      {sub.parentFeedback && (
-                        <div className="text-[11px] text-purple-700 font-medium truncate mt-0.5">
-                          💬 {sub.parentFeedback}
-                        </div>
-                      )}
+                      </span>
+                      <span className={`text-xs font-black px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap ${themeClasses.pointBadge}`}>
+                        +{sub.points} P
+                      </span>
                     </div>
 
-                    <span className={`text-xs font-black px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap ${themeClasses.pointBadge}`}>
-                      +{sub.points} P
-                    </span>
+                    {/* 아이가 인증 시 작성한 메모 */}
+                    {sub.childNote && (
+                      <div className="text-[11px] text-slate-700 bg-white p-2 rounded-xl border border-slate-200/80 flex items-start gap-1.5 leading-relaxed">
+                        <span className="shrink-0 text-slate-500 font-bold">✏️ 인증:</span>
+                        <span className="font-medium break-words">{sub.childNote}</span>
+                      </div>
+                    )}
+
+                    {/* 보호자 칭찬 한마디 / 코멘트 */}
+                    {sub.parentFeedback && (
+                      <div className="text-[11px] text-purple-950 bg-purple-50/80 p-2 rounded-xl border border-purple-200/70 flex items-start gap-1.5 leading-relaxed">
+                        <span className="shrink-0 text-purple-700 font-bold">💬 칭찬:</span>
+                        <span className="font-medium break-words">{sub.parentFeedback}</span>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

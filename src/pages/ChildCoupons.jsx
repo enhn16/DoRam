@@ -142,15 +142,20 @@ export const ChildCoupons = ({
                     )
                   ) : (
                     /* 사용 완료 상태 */
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-center gap-1 text-xs font-bold text-slate-500 bg-slate-200/80 p-2.5 rounded-2xl whitespace-nowrap">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-slate-600 bg-slate-200/80 py-2 px-3 rounded-2xl whitespace-nowrap">
                         <CheckCircle2 className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                         <span>사용 완료 ({coupon.usedAt ? format(new Date(coupon.usedAt), 'M월 d일') : ''})</span>
                       </div>
-                      {coupon.memo && coupon.memo !== 'approved' && coupon.memo !== 'pending' && (
-                        <p className="text-[11px] text-slate-500 bg-white p-2 rounded-xl border border-slate-200 text-center font-medium">
-                          구매 내용: {coupon.memo}
-                        </p>
+                      {coupon.memo && coupon.memo !== 'approved' && coupon.memo !== 'pending' ? (
+                        <div className="text-xs text-sky-950 bg-sky-50 p-2.5 rounded-2xl border border-sky-200 space-y-0.5">
+                          <span className="text-[10px] font-bold text-sky-700 block">💬 보호자 메모</span>
+                          <p className="font-semibold text-slate-800 break-words leading-relaxed">{coupon.memo}</p>
+                        </div>
+                      ) : (
+                        <div className="text-[11px] text-slate-400 text-center py-0.5 font-medium">
+                          기록된 메모가 없습니다
+                        </div>
                       )}
                     </div>
                   )}

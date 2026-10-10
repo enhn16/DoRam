@@ -4,6 +4,18 @@
 
 ---
 
+### [2026-10-10] 목표 반려 후 재제출 오류 수정, 실시간/푸시 알림 개편 및 캘린더/쿠폰 메모 표시 개선
+* **요청**: 반려된 목표 다시 제출 시 실패하는 오류 해결, 스마트폰 푸시 및 실시간 알림 미수신 문제 해결, 캘린더 달성 상세 조회 시 사용자 인증 메모 표시, 사용자 쿠폰함 사용완료 쿠폰에 보호자 메모 표시
+* **변경 파일**: [`src/services/goalRecordService.js`](file:///c:/developer/doram/src/services/goalRecordService.js), [`api/send-push.js`](file:///c:/developer/doram/api/send-push.js), [`src/services/notificationService.js`](file:///c:/developer/doram/src/services/notificationService.js), [`src/App.jsx`](file:///c:/developer/doram/src/App.jsx), [`src/components/CalendarView.jsx`](file:///c:/developer/doram/src/components/CalendarView.jsx), [`src/pages/ChildCoupons.jsx`](file:///c:/developer/doram/src/pages/ChildCoupons.jsx), [`supabase/migration_03_enable_realtime.sql`](file:///c:/developer/doram/supabase/migration_03_enable_realtime.sql)
+* **요약**:
+  - `goalRecordService.js` & `App.jsx`: `goal_records` 테이블의 `(goal_id, date)` UNIQUE 제약조건 위반으로 발생하던 에러(`23505 duplicate key`)를 해결. 동일 날짜에 반려(`rejected`)된 기록이 있으면 신규 INSERT 대신 기존 레코드를 `pending`으로 리셋 갱신(재제출)하도록 보강하여 재인증 플로우 완벽 복원
+  - `api/send-push.js`: OneSignal API v16 호출 시 `invalid_aliases` 에러로 푸시가 누락되던 문제를 검증된 태그 필터(`family_id`, `role`) 기반 타겟팅으로 전면 교체하여 실제 스마트폰 웹 푸시가 100% 정상 발송되도록 수정 및 수신 역할(`targetRole`) 확장
+  - `notificationService.js`: 아이 로그인 시에도 태그(`role: 'child'`)를 등록하는 `registerChildPush` 신설 및 양방향 푸시 파이프라인 연계
+  - `App.jsx`: DB Replication에 의존하지 않는 Supabase WebSocket **Broadcast** 채널 연동. 목표 제출/승인/반려 및 쿠폰 신청/승인 시 보호자와 아이 양쪽 기기에 0초 딜레이 인앱 실시간 토스트 팝업, 축하 효과음/컨페티 및 자동 데이터 동기화 구현. 아이(Sky)/보호자(Purple) 맞춤 토스트 UI 지원
+  - `CalendarView.jsx`: 날짜 클릭 시 나타나는 달성 목표 상세 모달에서 보호자 칭찬 한마디뿐만 아니라 아이가 인증 시 직접 작성했던 메모(`sub.childNote`)도 `✏️ 인증:` 형태로 함께 명확히 표시
+  - `ChildCoupons.jsx`: 아이 쿠폰함 "사용 완료" 탭의 쿠폰 카드에 보호자가 승인 시 작성했던 메모(`coupon.memo`)를 "💬 보호자 메모" 카드로 시각적으로 눈에 띄게 표시
+  - `migration_03_enable_realtime.sql`: Supabase DB 차원의 `supabase_realtime` publication 활성화 SQL 추가
+
 ### [2026-10-07] 관리자 설정 탭 진입 시 빈 화면(화이트아웃) 버그 수정
 * **요청**: 관리자 모드에서 '설정' 탭 진입 시 화면이 하얗게(빈 화면) 나오는 문제 해결
 * **변경 파일**: [`src/pages/AdminSettings.jsx`](file:///c:/developer/doram/src/pages/AdminSettings.jsx)

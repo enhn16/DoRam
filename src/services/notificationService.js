@@ -55,6 +55,27 @@ export const registerParentPush = (familyId) => {
 };
 
 /**
+ * 아이 로그인 시 가족 ID 기반으로 푸시 대상자(role: child) 등록
+ * @param {string} familyId
+ */
+export const registerChildPush = (familyId) => {
+  if (!familyId || typeof window === 'undefined') return;
+
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  window.OneSignalDeferred.push(async (OneSignal) => {
+    try {
+      const childExternalId = `${familyId}_child`;
+      await OneSignal.login(childExternalId);
+      OneSignal.User.addTag('family_id', familyId);
+      OneSignal.User.addTag('role', 'child');
+      console.log(`[OneSignal] Child registered with external_id: ${childExternalId}`);
+    } catch (error) {
+      console.warn('[OneSignal] Failed to register child user:', error);
+    }
+  });
+};
+
+/**
  * 브라우저 / 안드로이드 알림 권한 상태 조회
  * @returns {Promise<'granted' | 'denied' | 'default'>}
  */
@@ -97,13 +118,14 @@ export const requestPushPermission = async () => {
 };
 
 /**
- * 아이가 목표 달성 또는 쿠폰 사용 요청 시 보호자에게 푸시 발송
+ * 목표 달성/승인/반려 또는 쿠폰 신청 시 상대방(보호자/아이)에게 푸시 발송
  * @param {Object} params
  * @param {string} params.familyId 가족 고유 ID
+ * @param {'parent' | 'child'} [params.targetRole='parent'] 수신 대상 역할
  * @param {string} params.title 알림 제목
  * @param {string} params.message 알림 내용
  */
-export const sendPushNotification = async ({ familyId, title, message }) => {
+export const sendPushNotification = async ({ familyId, targetRole = 'parent', title, message }) => {
   if (!familyId || !message) return null;
 
   try {
@@ -114,6 +136,7 @@ export const sendPushNotification = async ({ familyId, title, message }) => {
       },
       body: JSON.stringify({
         familyId,
+        targetRole,
         title,
         message,
         url: window.location.origin,

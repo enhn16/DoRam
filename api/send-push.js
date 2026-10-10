@@ -23,7 +23,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { familyId, title, message, url } = req.body || {};
+    const { familyId, targetRole = 'parent', role, title, message, url } = req.body || {};
+    const finalRole = role || targetRole;
 
     if (!familyId || !message) {
       return res.status(400).json({ error: 'familyId and message are required' });
@@ -45,22 +46,24 @@ export default async function handler(req, res) {
       });
     }
 
-    // 해당 가족의 보호자(external_id: ${familyId}_parent) 대상 발송
-    const targetExternalId = `${familyId}_parent`;
+    // 해당 가족 및 역할(role: parent 또는 child)의 태그 기반 발송
+    // (OneSignal v16 Web Push에서 가장 안정적이고 확실한 타겟팅 방식)
+    const filters = [
+      { field: 'tag', key: 'family_id', relation: '=', value: familyId },
+      { field: 'tag', key: 'role', relation: '=', value: finalRole },
+    ];
 
     const payload = {
       app_id: appId,
-      include_aliases: {
-        external_id: [targetExternalId],
-      },
+      filters,
       target_channel: 'push',
       headings: {
+        en: title || '두람(DoRam) 알림',
         ko: title || '두람(DoRam) 알림',
-        en: title || 'DoRam Notification',
       },
       contents: {
-        ko: message,
         en: message,
+        ko: message,
       },
       url: url || undefined,
     };
@@ -75,6 +78,13 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
+
+    if (data.errors) {
+      console.warn('[OneSignal] Push warning/error response:', data.errors);
+    } else {
+      console.log(`[OneSignal] Push sent successfully (Notification ID: ${data.id})`);
+    }
+
     return res.status(200).json({ success: true, data });
   } catch (error) {
     console.error('[OneSignal] Push notification sending failed:', error);

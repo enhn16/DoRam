@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 import {
   fetchGoals,
@@ -55,9 +55,11 @@ import { playSuccessChime } from './utils/audio';
 import {
   initOneSignal,
   registerParentPush,
+  registerChildPush,
   sendPushNotification,
 } from './services/notificationService';
 import { motion, AnimatePresence } from 'motion/react';
+import confetti from 'canvas-confetti';
 import { Bell, X, Sparkles, Ticket } from 'lucide-react';
 
 import { Header } from './components/Header';
@@ -241,10 +243,14 @@ export default function App() {
     initOneSignal();
   }, []);
 
-  // 2. 보호자 로그인 시 OneSignal External ID 등록
+  // 2. 역할별 OneSignal Push 타겟 태그 등록
   useEffect(() => {
-    if (isLoggedIn && role === 'parent' && currentFamily?.id) {
-      registerParentPush(currentFamily.id);
+    if (isLoggedIn && currentFamily?.id) {
+      if (role === 'parent') {
+        registerParentPush(currentFamily.id);
+      } else if (role === 'child') {
+        registerChildPush(currentFamily.id);
+      }
     }
   }, [isLoggedIn, role, currentFamily?.id]);
 
@@ -258,12 +264,82 @@ export default function App() {
     }
   }, [toastNotification]);
 
-  // 4. 보호자 화면 실시간(Supabase Realtime) 동기화
-  useEffect(() => {
-    if (!isLoggedIn || !currentFamily?.id || role !== 'parent') return;
+  // 4. 가족 실시간(Supabase Realtime: Broadcast + Postgres changes) 양방향 동기화
+  const realtimeChannelRef = useRef(null);
 
-    const channel = supabase
-      .channel(`family-realtime-${currentFamily.id}`)
+  useEffect(() => {
+    if (!isLoggedIn || !currentFamily?.id) return;
+
+    const channelName = `family-realtime-${currentFamily.id}`;
+    const channel = supabase.channel(channelName);
+
+    // [A] Broadcast 리스너 (웹소켓 실시간 상호 알림 - 100% 즉시 전송)
+    channel
+      .on('broadcast', { event: 'goal_submitted' }, (payload) => {
+        if (role === 'parent') {
+          setToastNotification({
+            type: 'goal',
+            title: '새로운 목표 달성 요청!',
+            message: `🧒 ${payload.payload?.childName || '아이'}이가 '${payload.payload?.goalTitle || '목표'}'를 달성했습니다. 확인해주세요! ✨`,
+          });
+          playSuccessChime();
+          loadAllData(currentFamily.id);
+        }
+      })
+      .on('broadcast', { event: 'coupon_requested' }, (payload) => {
+        if (role === 'parent') {
+          setToastNotification({
+            type: 'coupon',
+            title: '쿠폰 사용 요청!',
+            message: `🎟️ 아이가 '${payload.payload?.couponTitle || '쿠폰'}' 사용을 신청했습니다. 승인해주세요!`,
+          });
+          playSuccessChime();
+          loadAllData(currentFamily.id);
+        }
+      })
+      .on('broadcast', { event: 'goal_approved' }, (payload) => {
+        if (role === 'child') {
+          setToastNotification({
+            type: 'goal_approved',
+            title: '목표 달성 승인! 🎉',
+            message: `👏 '${payload.payload?.goalTitle || '목표'}' 달성이 승인되어 +${payload.payload?.points || 0}P가 지급되었어요! ✨`,
+          });
+          playSuccessChime();
+          confetti({
+            particleCount: 60,
+            spread: 70,
+            origin: { y: 0.6 },
+          });
+          loadAllData(currentFamily.id);
+        }
+      })
+      .on('broadcast', { event: 'goal_rejected' }, (payload) => {
+        if (role === 'child') {
+          setToastNotification({
+            type: 'goal_rejected',
+            title: '목표 확인 필요 ✏️',
+            message: `'${payload.payload?.goalTitle || '목표'}' 내용을 다시 확인하고 재도전해보세요!`,
+          });
+          loadAllData(currentFamily.id);
+        }
+      })
+      .on('broadcast', { event: 'coupon_approved' }, (payload) => {
+        if (role === 'child') {
+          setToastNotification({
+            type: 'coupon_approved',
+            title: '쿠폰 사용 승인! 🎟️',
+            message: `'${payload.payload?.couponTitle || '쿠폰'}' 사용이 확인되었습니다. 즐거운 시간 보내세요!`,
+          });
+          playSuccessChime();
+          loadAllData(currentFamily.id);
+        }
+      })
+      .on('broadcast', { event: 'coupon_cancelled' }, () => {
+        if (role === 'parent') {
+          loadAllData(currentFamily.id);
+        }
+      })
+      // [B] Postgres Changes 리스너 (DB 직접 변경 보조 백업)
       .on(
         'postgres_changes',
         {
@@ -273,7 +349,7 @@ export default function App() {
           filter: `family_id=eq.${currentFamily.id}`,
         },
         (payload) => {
-          if (payload.new?.status === 'pending') {
+          if (role === 'parent' && payload.new?.status === 'pending') {
             setToastNotification({
               type: 'goal',
               title: '새로운 목표 달성 요청!',
@@ -293,7 +369,7 @@ export default function App() {
           filter: `family_id=eq.${currentFamily.id}`,
         },
         (payload) => {
-          if (payload.new?.memo === 'pending') {
+          if (role === 'parent' && payload.new?.memo === 'pending') {
             setToastNotification({
               type: 'coupon',
               title: '쿠폰 사용 요청!',
@@ -306,8 +382,11 @@ export default function App() {
       )
       .subscribe();
 
+    realtimeChannelRef.current = channel;
+
     return () => {
       supabase.removeChannel(channel);
+      realtimeChannelRef.current = null;
     };
   }, [isLoggedIn, role, currentFamily?.id]);
 
@@ -489,16 +568,40 @@ export default function App() {
         status: createdRecord.status,
       };
 
-      setSubmissions((prev) => [newSubmission, ...prev]);
+      // 반려 후 재제출인 경우 기존 항목 갱신, 신규 제출인 경우 상단 추가
+      setSubmissions((prev) => {
+        const existingIdx = prev.findIndex((s) => s.id === createdRecord.id);
+        if (existingIdx >= 0) {
+          const updated = [...prev];
+          updated[existingIdx] = newSubmission;
+          return updated;
+        }
+        return [newSubmission, ...prev];
+      });
+
+      // 보호자에게 실시간 웹소켓(Broadcast) 전송 (즉시 알림 팝업 및 화면 동기화)
+      realtimeChannelRef.current?.send({
+        type: 'broadcast',
+        event: 'goal_submitted',
+        payload: {
+          goalTitle: goal.title,
+          childName: profile.name || '아이',
+        },
+      });
 
       // 보호자에게 스마트폰 푸시 알림 발송 (백그라운드)
       sendPushNotification({
         familyId: currentFamily?.id,
+        targetRole: 'parent',
         title: '🌱 [두람] 목표 달성 완료!',
         message: `🧒 ${profile.name || '아이'}이가 '${goal.title}' 목표를 완료했어요! 확인해주세요 ✨`,
       });
     } catch (error) {
-      alert('미션 제출에 실패했습니다.');
+      if (error.code === 'ALREADY_APPROVED' || error.message === 'ALREADY_APPROVED') {
+        alert('이미 오늘 달성을 완료한 목표입니다!');
+      } else {
+        alert('미션 제출에 실패했습니다. 다시 시도해 주세요.');
+      }
     }
   };
 
@@ -572,6 +675,24 @@ export default function App() {
       };
 
       setPointHistory((prev) => [newHist, ...prev]);
+
+      // 아이 화면에 실시간 웹소켓(Broadcast) 전송 (축하 팝업, 효과음, 컨페티)
+      realtimeChannelRef.current?.send({
+        type: 'broadcast',
+        event: 'goal_approved',
+        payload: {
+          goalTitle: sub.goalTitle,
+          points: sub.points,
+        },
+      });
+
+      // 아이 스마트폰 푸시 알림 발송 (백그라운드)
+      sendPushNotification({
+        familyId: currentFamily?.id,
+        targetRole: 'child',
+        title: '🎉 [두람] 목표 달성 승인!',
+        message: `👏 '${sub.goalTitle}' 목표가 승인되어 +${sub.points}P를 받았어요! ✨`,
+      });
     } catch (error) {
       alert('승인 처리에 실패했습니다.');
     }
@@ -582,6 +703,7 @@ export default function App() {
   // =========================================================
 
   const handleRejectSubmission = async (submissionId) => {
+    const sub = submissions.find((s) => s.id === submissionId);
     try {
       const updatedRecord = await updateGoalRecord({
         id: submissionId,
@@ -598,6 +720,23 @@ export default function App() {
             : s
         )
       );
+
+      // 아이 화면에 실시간 웹소켓(Broadcast) 전송 (재도전 안내)
+      realtimeChannelRef.current?.send({
+        type: 'broadcast',
+        event: 'goal_rejected',
+        payload: {
+          goalTitle: sub?.goalTitle || '목표',
+        },
+      });
+
+      // 아이 스마트폰 푸시 알림 발송 (백그라운드)
+      sendPushNotification({
+        familyId: currentFamily?.id,
+        targetRole: 'child',
+        title: '✏️ [두람] 목표 확인 필요',
+        message: `'${sub?.goalTitle || '목표'}' 내용을 다시 확인하고 재도전해보세요!`,
+      });
     } catch (error) {
       alert('거절 처리에 실패했습니다.');
     }
@@ -684,6 +823,7 @@ export default function App() {
   // =========================================================
 
   const handleRequestCouponUse = async (passId) => {
+    const targetPass = userCoupons.find((p) => p.id === passId);
     try {
       const updated = await requestCouponUse(passId);
       setUserCoupons((prev) =>
@@ -697,10 +837,19 @@ export default function App() {
         )
       );
 
-      const targetPass = userCoupons.find((p) => p.id === passId);
+      // 보호자에게 실시간 웹소켓(Broadcast) 전송
+      realtimeChannelRef.current?.send({
+        type: 'broadcast',
+        event: 'coupon_requested',
+        payload: {
+          couponTitle: targetPass?.title || '쿠폰',
+        },
+      });
+
       // 보호자에게 스마트폰 푸시 알림 발송 (백그라운드)
       sendPushNotification({
         familyId: currentFamily?.id,
+        targetRole: 'parent',
         title: '🎟️ [두람] 쿠폰 사용 확인 요청!',
         message: `🎟️ ${profile.name || '아이'}이가 '${targetPass?.title || '쿠폰'}' 사용을 신청했어요! 확인해주세요.`,
       });
@@ -722,6 +871,13 @@ export default function App() {
             : p
         )
       );
+
+      // 보호자 화면에 취소 상태 브로드캐스트 동기화
+      realtimeChannelRef.current?.send({
+        type: 'broadcast',
+        event: 'coupon_cancelled',
+        payload: {},
+      });
     } catch (error) {
       alert('쿠폰 사용 신청 취소에 실패했습니다.');
     }
@@ -732,6 +888,7 @@ export default function App() {
   // =========================================================
 
   const handleMarkCouponUsed = async (passId, purchaseNote = null) => {
+    const targetPass = userCoupons.find((p) => p.id === passId);
     try {
       const updated = await markCouponUsed(passId, purchaseNote);
 
@@ -747,6 +904,23 @@ export default function App() {
             : p
         )
       );
+
+      // 아이 화면에 실시간 웹소켓(Broadcast) 전송
+      realtimeChannelRef.current?.send({
+        type: 'broadcast',
+        event: 'coupon_approved',
+        payload: {
+          couponTitle: targetPass?.title || '쿠폰',
+        },
+      });
+
+      // 아이 스마트폰 푸시 알림 발송 (백그라운드)
+      sendPushNotification({
+        familyId: currentFamily?.id,
+        targetRole: 'child',
+        title: '🎟️ [두람] 쿠폰 사용 확인 완료!',
+        message: `'${targetPass?.title || '쿠폰'}' 사용이 확인되었습니다!`,
+      });
     } catch (error) {
       alert('쿠폰 사용 처리에 실패했습니다.');
     }
@@ -998,25 +1172,53 @@ export default function App() {
           >
             <div
               onClick={() => {
-                if (toastNotification.type === 'goal') {
-                  setActiveTab('admin-home');
+                if (role === 'parent') {
+                  if (toastNotification.type === 'goal') {
+                    setActiveTab('admin-home');
+                  } else {
+                    setActiveTab('admin-coupons');
+                  }
                 } else {
-                  setActiveTab('admin-coupons');
+                  if (toastNotification.type.includes('coupon')) {
+                    setActiveTab('child-coupons');
+                  } else {
+                    setActiveTab('child-home');
+                  }
                 }
                 setToastNotification(null);
               }}
-              className="cursor-pointer bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-xl border-2 border-purple-400 flex items-start gap-3 text-slate-900 transition hover:scale-[1.02]"
+              className={`cursor-pointer bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-xl border-2 flex items-start gap-3 text-slate-900 transition hover:scale-[1.02] ${
+                role === 'parent' ? 'border-purple-400' : 'border-sky-400'
+              }`}
             >
-              <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shrink-0 border border-purple-200">
-                {toastNotification.type === 'goal' ? (
-                  <Sparkles className="w-5 h-5 text-purple-600 animate-pulse" />
+              <div
+                className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${
+                  role === 'parent'
+                    ? 'bg-purple-100 text-purple-700 border-purple-200'
+                    : 'bg-sky-100 text-sky-700 border-sky-200'
+                }`}
+              >
+                {toastNotification.type.includes('goal') ? (
+                  <Sparkles
+                    className={`w-5 h-5 animate-pulse ${
+                      role === 'parent' ? 'text-purple-600' : 'text-sky-600'
+                    }`}
+                  />
                 ) : (
-                  <Ticket className="w-5 h-5 text-purple-600 animate-pulse" />
+                  <Ticket
+                    className={`w-5 h-5 animate-pulse ${
+                      role === 'parent' ? 'text-purple-600' : 'text-sky-600'
+                    }`}
+                  />
                 )}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-1">
-                  <h4 className="text-xs font-black text-purple-900">
+                  <h4
+                    className={`text-xs font-black ${
+                      role === 'parent' ? 'text-purple-900' : 'text-sky-900'
+                    }`}
+                  >
                     {toastNotification.title}
                   </h4>
                   <button
@@ -1032,7 +1234,11 @@ export default function App() {
                 <p className="text-xs text-slate-700 font-semibold mt-0.5 truncate">
                   {toastNotification.message}
                 </p>
-                <p className="text-[10px] text-purple-600 font-extrabold mt-1">
+                <p
+                  className={`text-[10px] font-extrabold mt-1 ${
+                    role === 'parent' ? 'text-purple-600' : 'text-sky-600'
+                  }`}
+                >
                   👉 터치하여 바로 확인하기
                 </p>
               </div>
