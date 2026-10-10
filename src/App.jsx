@@ -58,9 +58,7 @@ import {
   registerChildPush,
   sendPushNotification,
 } from './services/notificationService';
-import { motion, AnimatePresence } from 'motion/react';
 import confetti from 'canvas-confetti';
-import { Bell, X, Sparkles, Ticket } from 'lucide-react';
 
 import { Header } from './components/Header';
 import { BottomNav } from './components/BottomNav';
@@ -111,9 +109,6 @@ export default function App() {
 
   // Loading States
   const [loading, setLoading] = useState(true);
-
-  // In-App Toast Notification
-  const [toastNotification, setToastNotification] = useState(null);
 
   // =========================================================
   // Supabase Data Load by Family ID
@@ -254,17 +249,7 @@ export default function App() {
     }
   }, [isLoggedIn, role, currentFamily?.id]);
 
-  // 3. 토스트 팝업 5초 자동 닫힘
-  useEffect(() => {
-    if (toastNotification) {
-      const timer = setTimeout(() => {
-        setToastNotification(null);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [toastNotification]);
-
-  // 4. 가족 실시간(Supabase Realtime: Broadcast + Postgres changes) 양방향 동기화
+  // 3. 가족 실시간(Supabase Realtime: Broadcast + Postgres changes) 양방향 동기화
   const realtimeChannelRef = useRef(null);
 
   useEffect(() => {
@@ -275,35 +260,20 @@ export default function App() {
 
     // [A] Broadcast 리스너 (웹소켓 실시간 상호 알림 - 100% 즉시 전송)
     channel
-      .on('broadcast', { event: 'goal_submitted' }, (payload) => {
+      .on('broadcast', { event: 'goal_submitted' }, () => {
         if (role === 'parent') {
-          setToastNotification({
-            type: 'goal',
-            title: '새로운 목표 달성 요청!',
-            message: `🧒 ${payload.payload?.childName || '아이'}이가 '${payload.payload?.goalTitle || '목표'}'를 달성했습니다. 확인해주세요! ✨`,
-          });
           playSuccessChime();
           loadAllData(currentFamily.id);
         }
       })
-      .on('broadcast', { event: 'coupon_requested' }, (payload) => {
+      .on('broadcast', { event: 'coupon_requested' }, () => {
         if (role === 'parent') {
-          setToastNotification({
-            type: 'coupon',
-            title: '쿠폰 사용 요청!',
-            message: `🎟️ 아이가 '${payload.payload?.couponTitle || '쿠폰'}' 사용을 신청했습니다. 승인해주세요!`,
-          });
           playSuccessChime();
           loadAllData(currentFamily.id);
         }
       })
-      .on('broadcast', { event: 'goal_approved' }, (payload) => {
+      .on('broadcast', { event: 'goal_approved' }, () => {
         if (role === 'child') {
-          setToastNotification({
-            type: 'goal_approved',
-            title: '목표 달성 승인! 🎉',
-            message: `👏 '${payload.payload?.goalTitle || '목표'}' 달성이 승인되어 +${payload.payload?.points || 0}P가 지급되었어요! ✨`,
-          });
           playSuccessChime();
           confetti({
             particleCount: 60,
@@ -313,23 +283,13 @@ export default function App() {
           loadAllData(currentFamily.id);
         }
       })
-      .on('broadcast', { event: 'goal_rejected' }, (payload) => {
+      .on('broadcast', { event: 'goal_rejected' }, () => {
         if (role === 'child') {
-          setToastNotification({
-            type: 'goal_rejected',
-            title: '목표 확인 필요 ✏️',
-            message: `'${payload.payload?.goalTitle || '목표'}' 내용을 다시 확인하고 재도전해보세요!`,
-          });
           loadAllData(currentFamily.id);
         }
       })
-      .on('broadcast', { event: 'coupon_approved' }, (payload) => {
+      .on('broadcast', { event: 'coupon_approved' }, () => {
         if (role === 'child') {
-          setToastNotification({
-            type: 'coupon_approved',
-            title: '쿠폰 사용 승인! 🎟️',
-            message: `'${payload.payload?.couponTitle || '쿠폰'}' 사용이 확인되었습니다. 즐거운 시간 보내세요!`,
-          });
           playSuccessChime();
           loadAllData(currentFamily.id);
         }
@@ -350,11 +310,6 @@ export default function App() {
         },
         (payload) => {
           if (role === 'parent' && payload.new?.status === 'pending') {
-            setToastNotification({
-              type: 'goal',
-              title: '새로운 목표 달성 요청!',
-              message: '🧒 아이가 목표를 달성했습니다. 확인해주세요! ✨',
-            });
             playSuccessChime();
             loadAllData(currentFamily.id);
           }
@@ -370,11 +325,6 @@ export default function App() {
         },
         (payload) => {
           if (role === 'parent' && payload.new?.memo === 'pending') {
-            setToastNotification({
-              type: 'coupon',
-              title: '쿠폰 사용 요청!',
-              message: '🎟️ 아이가 쿠폰 사용을 신청했습니다. 승인해주세요!',
-            });
             playSuccessChime();
             loadAllData(currentFamily.id);
           }
@@ -1160,92 +1110,6 @@ export default function App() {
           </>
         )}
       </main>
-
-      {/* Realtime Toast Notification Banner */}
-      <AnimatePresence>
-        {toastNotification && (
-          <motion.div
-            initial={{ opacity: 0, y: -20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4"
-          >
-            <div
-              onClick={() => {
-                if (role === 'parent') {
-                  if (toastNotification.type === 'goal') {
-                    setActiveTab('admin-home');
-                  } else {
-                    setActiveTab('admin-coupons');
-                  }
-                } else {
-                  if (toastNotification.type.includes('coupon')) {
-                    setActiveTab('child-coupons');
-                  } else {
-                    setActiveTab('child-home');
-                  }
-                }
-                setToastNotification(null);
-              }}
-              className={`cursor-pointer bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-xl border-2 flex items-start gap-3 text-slate-900 transition hover:scale-[1.02] ${
-                role === 'parent' ? 'border-purple-400' : 'border-sky-400'
-              }`}
-            >
-              <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${
-                  role === 'parent'
-                    ? 'bg-purple-100 text-purple-700 border-purple-200'
-                    : 'bg-sky-100 text-sky-700 border-sky-200'
-                }`}
-              >
-                {toastNotification.type.includes('goal') ? (
-                  <Sparkles
-                    className={`w-5 h-5 animate-pulse ${
-                      role === 'parent' ? 'text-purple-600' : 'text-sky-600'
-                    }`}
-                  />
-                ) : (
-                  <Ticket
-                    className={`w-5 h-5 animate-pulse ${
-                      role === 'parent' ? 'text-purple-600' : 'text-sky-600'
-                    }`}
-                  />
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-1">
-                  <h4
-                    className={`text-xs font-black ${
-                      role === 'parent' ? 'text-purple-900' : 'text-sky-900'
-                    }`}
-                  >
-                    {toastNotification.title}
-                  </h4>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setToastNotification(null);
-                    }}
-                    className="text-slate-400 hover:text-slate-600 p-0.5 rounded-lg"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-                <p className="text-xs text-slate-700 font-semibold mt-0.5 truncate">
-                  {toastNotification.message}
-                </p>
-                <p
-                  className={`text-[10px] font-extrabold mt-1 ${
-                    role === 'parent' ? 'text-purple-600' : 'text-sky-600'
-                  }`}
-                >
-                  👉 터치하여 바로 확인하기
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <BottomNav
         role={role}
